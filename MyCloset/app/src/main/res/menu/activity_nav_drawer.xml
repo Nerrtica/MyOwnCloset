@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_closet"
+            android:icon="@drawable/ic_hanger_black"
+            android:title="나만의 옷장" />
+        <item
+            android:id="@+id/nav_suggest"
+            android:icon="@drawable/ic_timeline_black_24dp"
+            android:title="오늘의 추천" />
+        <item
+            android:id="@+id/nav_bookmark"
+            android:icon="@drawable/ic_bookmark_black_24dp"
+            android:title="북마크" />
+        <item
+            android:id="@+id/nav_setting"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="환경설정" />
+    </group>
+
+    <item android:title="Other">
+        <menu>
+            <item
+                android:id="@+id/nav_about_us"
+                android:title="About Us" />
+            <item
+                android:id="@+id/nav_version"
+                android:title="Version" />
+        </menu>
+    </item>
+
+</menu>
