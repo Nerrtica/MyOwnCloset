@@ -1,0 +1,53 @@
+import webbrowser
+import requests
+from lxml.html import parse
+from io import StringIO
+import random
+import urllib.request
+
+def download_img(url,kind):
+    name = random.randrange(1,500)
+    full_name = str(kind) + str(name) + ".jpg"
+    try: urllib.request.urlretrieve(url, full_name)
+    except : return
+
+def search_img(keyword,pageNumber):
+    browser = webbrowser.Chrome()
+
+    # 검색할 이미지의 키워드 입력
+    url = 'https://www.amazon.com/s/ref=sr_pg_3?fst=p90x%3A1%2Cas%3Aon&rh=k%3A'+keyword+'%2Cn%3A7141123011&page='+str(pageNumber)
+
+
+
+
+     # html 소스 가져오기
+    text = requests.get(url).text
+
+    # html 문서로 파싱
+    text_source = StringIO(text)
+    parsed = parse(text_source)
+
+    print(text)
+    # root node
+    doc = parsed.getroot()
+
+    imgs = doc.findall('.//img')
+
+    img_list = []   # 이미지 경로가 담길 list
+
+
+    for a in imgs[1:]:
+        img_list.append(a.get('src'))
+        print(a.get('src'))
+        if a.get('src') == 'https://images-na.ssl-images-amazon.com/images/G/01/AMAZON_FASHION/2014/CLOTHING/FREE_RETURNS/NAV_GRAPHIC/06_2015/free_returns._CB302583382_.png' or \
+                a.get('src') == 'https://images-na.ssl-images-amazon.com/images/G/01/newforyou/hearts_sm-o._CB315916342_.png' or \
+                a.get('src') == 'https://images-na.ssl-images-amazon.com/images/G/01/nav2/images/gui/amazon-fashion-store-new._CB520838675_.png':
+            continue
+        download_img(a.get('src'),keyword)
+
+
+keyword = input("검색할 이미지를 입력하세요 : ")
+
+
+for a in range(2,10):
+    search_img(keyword,a)
