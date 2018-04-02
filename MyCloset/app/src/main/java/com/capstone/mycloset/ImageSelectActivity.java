@@ -27,9 +27,17 @@ public class ImageSelectActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
+        Uri photoUri = (Uri) getIntent().getExtras().get("Image");
+        Bitmap photo = null;
+        try {
+            photo = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+        } catch (IOException e) {
+            e.printStackTrace();
+            finish();
+        }
 
         ImageView imageView = (ImageView) findViewById(R.id.camera_img);
-        imageView.setImageBitmap((Bitmap) getIntent().getExtras().get("Image"));
+        imageView.setImageBitmap(photo);
 
         TextView textView = (TextView) findViewById(R.id.camera_btn);
         textView.setOnClickListener(new View.OnClickListener() {

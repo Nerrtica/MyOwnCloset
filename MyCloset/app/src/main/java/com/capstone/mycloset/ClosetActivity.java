@@ -2,12 +2,14 @@ package com.capstone.mycloset;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,7 +24,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -30,12 +34,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
-import android.widget.TabHost;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -46,7 +48,8 @@ import java.util.List;
 
 public class ClosetActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    private Uri mCurrentPhotoUri;
+    private Uri photoUri;
+    private NavigationView navigationView;
 
     private static final int MSG_TIMER_EXPIRED = 1;
     private static final int BACKKEY_TIMEOUT = 2;
@@ -54,6 +57,7 @@ public class ClosetActivity extends AppCompatActivity
     private boolean mIsBackKeyPressed = false;
     private long mCurrTimeInMillis = 0;
     private static final int PICK_FROM_CAMERA = 0;
+    private static final int CROP_FROM_CAMERA = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,9 +77,19 @@ public class ClosetActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 if(grantExternalCameraPermission()) {
-//                    mCurrentPhotoUri = createImageFile();
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(intent, PICK_FROM_CAMERA);
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile();
+                    } catch (IOException e) {
+                        Toast.makeText(ClosetActivity.this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+                    }
+                    if (photoFile != null) {
+                        photoUri = FileProvider.getUriForFile(ClosetActivity.this,
+                                "com.capstone.mycloset.provider", photoFile); //FileProvider의 경우 이전 포스트를 참고하세요.
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri); //사진을 찍어 해당 Content uri를 photoUri에 적용시키기 위함
+                        startActivityForResult(intent, PICK_FROM_CAMERA);
+                    }
                 }
                 else {
                     Snackbar.make(view, "카메라 권한이 필요합니다", Snackbar.LENGTH_SHORT)
@@ -90,17 +104,10 @@ public class ClosetActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.getMenu().findItem(R.id.nav_closet).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
     }
-
-//    private Uri createImageFile(){
-//        String imageFileName = "tmp_" + String.valueOf(System.currentTimeMillis()) + ".jpg";
-//
-//        Uri uri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), imageFileName));
-//        return uri;
-//    }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
@@ -131,6 +138,22 @@ public class ClosetActivity extends AppCompatActivity
         }
     }
 
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
+        String imageFileName = "tmp_" + timeStamp + "_";
+        File storageDir = new File(Environment.getExternalStorageDirectory() + "/MyCloset/");
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
+        }
+        File image = File.createTempFile(
+                imageFileName,
+                ".jpg",
+                storageDir
+        );
+        return image;
+    }
+
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFrag(new Fragment(), "ONE");
@@ -144,6 +167,14 @@ public class ClosetActivity extends AppCompatActivity
         adapter.addFrag(new Fragment(), "NINE");
         adapter.addFrag(new Fragment(), "TEN");
         viewPager.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onResume() {
+        if(navigationView != null) {
+            navigationView.getMenu().findItem(R.id.nav_closet).setChecked(true);
+        }
+        super.onResume();
     }
 
     @Override
@@ -260,35 +291,84 @@ public class ClosetActivity extends AppCompatActivity
         if(resultCode != RESULT_OK) {
             return;
         }
-
         switch(requestCode) {
             case PICK_FROM_CAMERA:
             {
-                Intent intent = new Intent(getApplicationContext() , ImageSelectActivity.class);
-                intent.putExtra("Image", mCurrentPhotoUri);
-                startActivity(intent);
-//                // 이미지를 가져온 이후의 리사이즈할 이미지 크기를 결정합니다.
-//                // 이후에 이미지 크롭 어플리케이션을 호출하게 됩니다.
-//
-//                Intent intent = new Intent("com.android.camera.action.CROP");
-//                intent.setDataAndType(mImageCaptureUri, "image/*");
-//
-//                // Crop한 이미지를 저장할 Path
-//                intent.putExtra("output", mImageCaptureUri);
-//
-//                // Return Data를 사용하면 번들 용량 제한으로 크기가 큰 이미지는
-//                // 넘겨 줄 수 없다.
-//                startActivityForResult(intent, CROP_FROM_CAMERA);
+                cropImage();
+                MediaScannerConnection.scanFile(ClosetActivity.this, //앨범에 사진을 보여주기 위해 Scan을 합니다.
+                        new String[]{photoUri.getPath()}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+                            public void onScanCompleted(String path, Uri uri) {
+                            }
+                        });
                 break;
             }
-//            default:
-//            {
-//                File f = new File(mCurrentPhotoUri.getPath());
-//                if(f.exists()) {
-//                    f.delete();
-//                }
-//            }
+            case CROP_FROM_CAMERA:
+            {
+                try {
+                    Intent intent = new Intent(getApplicationContext() , ImageSelectActivity.class);
+                    intent.putExtra("Image", photoUri);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e("ERROR", e.getMessage().toString());
+                }
+                break;
+            }
         }
+    }
+
+    public void cropImage() {
+        this.grantUriPermission("com.android.camera", photoUri,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(photoUri, "image/*");
+
+        List<ResolveInfo> list = getPackageManager().queryIntentActivities(intent, 0);
+        grantUriPermission(list.get(0).activityInfo.packageName, photoUri,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        int size = list.size();
+        if (size == 0) {
+            Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        } else {
+            Toast.makeText(this, "용량이 큰 사진의 경우 시간이 오래 걸릴 수 있습니다.", Toast.LENGTH_SHORT).show();
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.putExtra("crop", "true");
+            intent.putExtra("aspectX", 4);
+            intent.putExtra("aspectY", 4);
+            intent.putExtra("scale", true);
+            File croppedFileName = null;
+            try {
+                croppedFileName = createImageFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            File folder = new File(Environment.getExternalStorageDirectory() + "/MyCloset/");
+            File tempFile = new File(folder.toString(), croppedFileName.getName());
+
+            photoUri = FileProvider.getUriForFile(ClosetActivity.this,
+                    "com.capstone.mycloset.provider", tempFile);
+
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            intent.putExtra("return-data", false);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString()); //Bitmap 형태로 받기 위해 해당 작업 진행
+
+            Intent i = new Intent(intent);
+            ResolveInfo res = list.get(0);
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            i.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            grantUriPermission(res.activityInfo.packageName, photoUri,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            startActivityForResult(i, CROP_FROM_CAMERA);
+        }
+
     }
 
     private boolean grantExternalCameraPermission() {

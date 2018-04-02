@@ -147,6 +147,18 @@ public class RecommendationActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        if(navigationView != null) {
+            if (TYPE_CODE == 0) {
+                navigationView.getMenu().findItem(R.id.nav_suggest).setChecked(true);
+            } else {
+                navigationView.getMenu().findItem(R.id.nav_bookmark).setChecked(true);
+            }
+        }
+        super.onResume();
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
