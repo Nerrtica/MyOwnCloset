@@ -1,0 +1,22 @@
+## version : 1.0
+
+Table
+1) coordi
+   -> _id            integer primary key
+   -> name           char(10) 
+   -> Top_clothes    char(10) foreign key from closet.id
+   -> buttom_clothes char(10) foreign key from closet.id
+
+2) Clothes_type
+   -> category       char(10) primary key
+   -> section        char(10) primary key
+   
+3) closet
+   -> _id            integer primary key
+   -> type           char(10) foreign key from Clothes.section
+   -> color          char(10)
+   
+class
+1) SQLOpenHelper
+
+2) DBcontroller
