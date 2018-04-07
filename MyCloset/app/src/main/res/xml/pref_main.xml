@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="알림">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="notifications_new_message"
+            android:title="알림"
+            android:summary="출근 전 코디 추천 알림을 전송합니다"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="일반">
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="성별"
+            android:entries="@array/pref_gender_entries"
+            android:entryValues="@array/pref_gender_values"
+            android:key="key_gender"
+            android:title="성별" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="데이터 삭제">
+        <com.capstone.mycloset.MyDialogPreference
+            android:key="key_data_delete"
+            android:title="모든 데이터 삭제"
+            android:summary="옷장 데이터 및 북마크를 모두 삭제합니다"
+            android:dialogMessage="정말로 모든 데이터를 삭제하시겠습니까?"
+            android:positiveButtonText="확인"
+            android:negativeButtonText="취소"/>
+    </PreferenceCategory>
+</PreferenceScreen>
