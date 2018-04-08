@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import java.io.IOException;
 
-public class ImageSelectActivity extends FragmentActivity {
+public class RequestImageToServer extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

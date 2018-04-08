@@ -154,16 +154,16 @@ public class ClosetActivity extends AppCompatActivity
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new Fragment(), "ONE");
-        adapter.addFrag(new Fragment(), "TWO");
-        adapter.addFrag(new Fragment(), "THREE");
-        adapter.addFrag(new Fragment(), "FOUR");
-        adapter.addFrag(new Fragment(), "FIVE");
-        adapter.addFrag(new Fragment(), "SIX");
-        adapter.addFrag(new Fragment(), "SEVEN");
-        adapter.addFrag(new Fragment(), "EIGHT");
-        adapter.addFrag(new Fragment(), "NINE");
-        adapter.addFrag(new Fragment(), "TEN");
+        adapter.addFrag(new ClosetFragment().newInstance(1), "ONE");
+        adapter.addFrag(new ClosetFragment().newInstance(2), "TWO");
+        adapter.addFrag(new ClosetFragment().newInstance(3), "THREE");
+        adapter.addFrag(new ClosetFragment().newInstance(4), "FOUR");
+        adapter.addFrag(new ClosetFragment().newInstance(5), "FIVE");
+        adapter.addFrag(new ClosetFragment().newInstance(6), "SIX");
+        adapter.addFrag(new ClosetFragment().newInstance(7), "SEVEN");
+        adapter.addFrag(new ClosetFragment().newInstance(8), "EIGHT");
+        adapter.addFrag(new ClosetFragment().newInstance(9), "NINE");
+        adapter.addFrag(new ClosetFragment().newInstance(10), "TEN");
         viewPager.setAdapter(adapter);
     }
 
@@ -304,7 +304,7 @@ public class ClosetActivity extends AppCompatActivity
             case CROP_FROM_CAMERA:
             {
                 try {
-                    Intent intent = new Intent(getApplicationContext() , ImageSelectActivity.class);
+                    Intent intent = new Intent(getApplicationContext() , RequestImageToServer.class);
                     intent.putExtra("Image", photoUri);
                     startActivity(intent);
                 } catch (Exception e) {
