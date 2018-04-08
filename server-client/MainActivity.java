@@ -1,4 +1,4 @@
-package com.example.caucse.myapplication;
+package com.example.caucse.client;
 
 
 import android.support.v7.app.AppCompatActivity;
@@ -9,9 +9,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
@@ -32,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     //String message="";
     //Socket socket;
     DatagramSocket socket;
+    Socket Socket;
+    BufferedReader inputStream;
+    PrintWriter outputStream;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +65,20 @@ public class MainActivity extends AppCompatActivity {
         public void run(){
             try{
                 System.out.println("now 2");
+                Socket = new Socket(IP,PORT);
+                //socket = new DatagramSocket();
+                outputStream = new PrintWriter(Socket.getOutputStream(),true);
 
-                socket = new DatagramSocket();
-                InetAddress serverAddr = InetAddress.getByName(IP);
                 System.out.println("now 3");
-                byte[] message = inputText.getText().toString().getBytes();
-                DatagramPacket packet = new DatagramPacket(message,message.length,serverAddr,PORT);
-                socket.send(packet);
+                String message = inputText.getText().toString();
 
-                socket.receive((packet));
-                String sentence = new String(packet.getData());
+                outputStream.println(message);
+                inputStream = new BufferedReader(new InputStreamReader(Socket.getInputStream()));
 
-                outputText.setText(sentence);
+
+                //socket.receive((packet));
+                //String sentence = new String(packet.getData());
+                //outputText.setText(sentence);
 
             } catch (IOException e) {
                 System.out.println("ERROR");
