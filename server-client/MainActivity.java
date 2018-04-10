@@ -75,10 +75,8 @@ public class MainActivity extends AppCompatActivity {
                 outputStream.println(message);
                 inputStream = new BufferedReader(new InputStreamReader(Socket.getInputStream()));
 
-
-                //socket.receive((packet));
-                //String sentence = new String(packet.getData());
-                //outputText.setText(sentence);
+                message = inputStream.readLine();
+                outputText.setText(message);
 
             } catch (IOException e) {
                 System.out.println("ERROR");
