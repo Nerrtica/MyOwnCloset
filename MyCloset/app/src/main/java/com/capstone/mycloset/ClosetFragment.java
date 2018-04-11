@@ -57,6 +57,7 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
         Toast.makeText(getContext(), "Test : " + i, Toast.LENGTH_SHORT).show();
         finish();
     }
+
     private void setResult(String resultOk, Intent result) {
         // TODO Auto-generated method stub
 
@@ -119,8 +120,6 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
                 mThumbs.add(R.drawable.ic_empty);
                 mThumbs.add(R.drawable.ic_empty);
             }
-
-
 
 //            final Resources resources = getResources();
 //            final String packageName = getActivity().getApplication().getPackageName();

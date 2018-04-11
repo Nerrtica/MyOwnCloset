@@ -10,6 +10,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.NestedScrollView;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -140,8 +142,8 @@ public class RecommendationActivity extends AppCompatActivity
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new Fragment(), "오늘의 추천");
-        adapter.addFrag(new Fragment(), "북마크");
+        adapter.addFrag(new RecommendationFragment(), "오늘의 추천");
+        adapter.addFrag(new BookmarkFragment(), "북마크");
         viewPager.setAdapter(adapter);
     }
 
