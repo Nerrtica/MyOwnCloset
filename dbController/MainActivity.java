@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private DBOpenHelper openHelper;
     EditText category;
     EditText section;
+    EditText name;
     Button SubmitButton;
     Button loadButton;
     ImageView imageView;
@@ -29,29 +30,26 @@ public class MainActivity extends AppCompatActivity {
 
         category = (EditText)findViewById(R.id.category);
         section = (EditText)findViewById(R.id.section);
-        imageView = (ImageView)findViewById(R.id.imageView);
         SubmitButton = (Button)findViewById(R.id.submit);
         loadButton = (Button)findViewById(R.id.load);
+        name = (EditText)findViewById(R.id.name);
 
-        final Bitmap image = BitmapFactory.decodeResource(getResources(),R.drawable.neete);
-        imageView.setImageBitmap(image);
 
         SubmitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                controller.InsertCloset(category.getText().toString(),section.getText().toString(),image);
+                controller.InsertCoordi(name.getText().toString(),category.getText().toString(),section.getText().toString());
+                name.setText("");
                 category.setText("");
                 section.setText("");
-                imageView.setImageBitmap(null);
             }
         });
         loadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Closet name = controller.FindCloset()[0];
-                category.setText(name.getType());
-                section.setText(name.getColor());
-                imageView.setImageBitmap(name.getImage());
+                Coordi name = controller.FindCoordi()[0];
+                category.setText(name.getTop());
+                section.setText(name.getBottom());
             }
         });
     }
