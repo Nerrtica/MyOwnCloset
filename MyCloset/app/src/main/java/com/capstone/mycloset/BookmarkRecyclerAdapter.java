@@ -56,6 +56,7 @@ public class BookmarkRecyclerAdapter extends RecyclerView.Adapter<BookmarkRecycl
             }
         });
         holder.favoriteButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+        holder.favoriteButton.setChecked(false);
         holder.favoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

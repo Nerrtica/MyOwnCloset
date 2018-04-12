@@ -3,7 +3,9 @@ package com.capstone.mycloset;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,12 +17,15 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class ClosetFragment extends android.support.v4.app.Fragment implements AdapterView.OnItemClickListener {
     private static final String RESULT_OK = null;
+    private ArrayList<Integer> mThumbs;
     private int TYPE_CODE;
-    public Uri CONTENT_URI;
+
+    private Uri CONTENT_URI;
 
     public static ClosetFragment newInstance(int typeCode) {
         ClosetFragment closetFragment = new ClosetFragment();
@@ -45,6 +50,13 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
         GridView gridview = (GridView) view.findViewById(R.id.gridview_closet);
         gridview.setAdapter(new IconAdapter(getContext(), iconSize));
         gridview.setOnItemClickListener(this);
+        gridview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getContext(), "Test Long Click: " + position, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
 //        CONTENT_URI=Uri.parse("content://" + IconsProvider.class.getCanonicalName());
         return view;
     }
@@ -55,7 +67,9 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
 //        Intent result = new Intent(null, Uri.withAppendedPath(CONTENT_URI,icon));
 //        setResult(RESULT_OK, result);
         Toast.makeText(getContext(), "Test : " + i, Toast.LENGTH_SHORT).show();
-        finish();
+        Intent intent = new Intent(getContext() , ImageCheckActivity.class);
+        intent.putExtra("Image", mThumbs.get(i));
+        startActivity(intent);
     }
 
     private void setResult(String resultOk, Intent result) {
@@ -110,8 +124,6 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
             return imageView;
         }
 
-        private ArrayList<Integer> mThumbs;
-        ////////////////////////////////////////////////
         private void loadIcon() {
             mThumbs = new ArrayList<Integer>();
 

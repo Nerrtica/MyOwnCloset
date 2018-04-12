@@ -8,4 +8,17 @@
         <item>0</item>
         <item>1</item>
     </string-array>
+    <string-array name="card_color">
+        <item>#F44336</item>
+        <item>#E91E63</item>
+        <item>#9C27B0</item>
+        <item>#2196F3</item>
+        <item>#673AB7</item>
+        <item>#009688</item>
+        <item>#4CAF50</item>
+        <item>#FFEB3B</item>
+        <item>#FF9800</item>
+        <item>#795548</item>
+        <item>#9E9E9E</item>
+    </string-array>
 </resources>

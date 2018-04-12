@@ -46,6 +46,7 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
         super.onCreate(savedInstanceState);
 
         favoriteButton = (ToggleButton) view.findViewById(R.id.favorite_button);
+        favoriteButton.setChecked(true);
         favoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

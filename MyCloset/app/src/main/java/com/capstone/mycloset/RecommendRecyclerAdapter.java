@@ -2,8 +2,11 @@ package com.capstone.mycloset;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by kdwoo on 2017-09-28.
@@ -21,6 +25,8 @@ import java.util.List;
 public class RecommendRecyclerAdapter extends RecyclerView.Adapter<RecommendRecyclerAdapter.ViewHolder> {
     Context context;
     List<FashionItem> items;
+    String[] colorArray;
+    Random random;
     int item_layout;
     private boolean first;
 
@@ -28,6 +34,8 @@ public class RecommendRecyclerAdapter extends RecyclerView.Adapter<RecommendRecy
         this.context = context;
         this.items = items;
         this.item_layout = item_layout;
+        colorArray = context.getResources().getStringArray(R.array.card_color);
+        random = new Random();
 
         first = true;
     }
@@ -46,6 +54,7 @@ public class RecommendRecyclerAdapter extends RecyclerView.Adapter<RecommendRecy
         holder.image.setImageDrawable(drawable);
         holder.title.setText(item.getTitle());
         holder.summary.setText(item.getSummary());
+        holder.cardView.setCardBackgroundColor(Color.parseColor(colorArray[random.nextInt(colorArray.length)]));
 //        holder.cardview.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -65,12 +74,14 @@ public class RecommendRecyclerAdapter extends RecyclerView.Adapter<RecommendRecy
         ImageView image;
         TextView title;
         TextView summary;
+        CardView cardView;
 
         public ViewHolder(View itemView) {
             super(itemView);
             image = (ImageView)itemView.findViewById(R.id.content_image);
             title = (TextView)itemView.findViewById(R.id.content_title);
             summary = (TextView)itemView.findViewById(R.id.content_summary);
+            cardView = (CardView)itemView.findViewById(R.id.card_view_cloth);
         }
     }
 }

@@ -13,6 +13,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.SearchView;
+import android.view.Display;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -177,6 +178,7 @@ public class RecommendationActivity extends AppCompatActivity
         searchMenu = menu.findItem(R.id.menu_search);
         searchMenu.setVisible(isVisibleSearchMenu);
         SearchView searchView = (SearchView) searchMenu.getActionView();
+        searchView.setMaxWidth(convertDipToPixels(10000));
         searchView.setQueryHint("검색");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
 
@@ -263,5 +265,10 @@ public class RecommendationActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private int convertDipToPixels(float dips)
+    {
+        return (int) (dips * this.getResources().getDisplayMetrics().density + 0.5f);
     }
 }
