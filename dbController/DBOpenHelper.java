@@ -1,4 +1,4 @@
-package kacaumap.kacau.com.db;
+package com.example.caucse.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
