@@ -1,4 +1,5 @@
-package kacaumap.kacau.com.db;
+package com.example.caucse.db;
+
 
 import android.content.Context;
 import android.database.Cursor;
@@ -34,39 +35,44 @@ public class DBcontroller {
     //Type를 입력하는 구문이다. sql문을 사용하여 입력
     public void InsertType(String category,String section){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO clothes_type VALUES ('"+category+", "+section+");";
+        String sql = "INSERT INTO clothes_type VALUES ('"+category+"', '"+section+"');";
         db.execSQL(sql);
     }
 
     //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다.
     public void InsertCoordi(String name,String top,String bottom){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+top+"', '"+bottom+");";
+        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+top+"', '"+bottom+"');";
         db.execSQL(sql);
     }
 
     //옷장에 옷을 넣는 함수이다. 마찬가지로 인자로 type, color, image d가 있고 id는 autoincrement이다.
-    public void InsertCloset(String type,String color,Drawable d){
+    public void InsertCloset(String type,String color,Bitmap B){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        byte[] data = getByteArrayFromDrawble(d);
-        SQLiteStatement statement = db.compileStatement("insert into Closet VALUES (NULL,?,?,?");
+        db.beginTransaction();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        B.compress(Bitmap.CompressFormat.PNG,10,stream);
+        byte[] data = stream.toByteArray();
+        SQLiteStatement statement = db.compileStatement("insert into closet VALUES (NULL,?,?,?)");
         statement.bindString(1,type);
         statement.bindString(2,color);
         statement.bindBlob(3,data);
+        statement.execute();
+        System.out.println("DB ACESS IS SUCCESS");
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 주어졌을때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
-    public coordi[] FindCoordi(String name){
+    public Coordi[] FindCoordi(String name){
         SQLiteDatabase db = openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from coordi where name='"+name+"';",null);
-        coordi myCoordi[] = new coordi[100];
+        Coordi myCoordi[] = new Coordi[100];
         int i=0;
         while (cursor.moveToNext()){
             if(i>99) break;
             int id = cursor.getInt(0);
             String top = cursor.getString(2);
             String bottom = cursor.getString(3);
-            myCoordi[i] = new coordi(id,name,top,bottom);
+            myCoordi[i] = new Coordi(id,name,top,bottom);
             i++;
         }
         cursor.close();
@@ -74,10 +80,10 @@ public class DBcontroller {
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 없고, 코디의 모든 데이터를 싹 긁어올때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
-    public coordi[] FindCoordi(){
+    public Coordi[] FindCoordi(){
         SQLiteDatabase db =openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from coordi",null);
-        coordi myCoordi[] = new coordi[100];
+        Coordi myCoordi[] = new Coordi[100];
         int i=0;
         while (cursor.moveToNext()){
             if(i>99) break;
@@ -85,7 +91,7 @@ public class DBcontroller {
             String name = cursor.getString(1);
             String top = cursor.getString(2);
             String bottom = cursor.getString(3);
-            myCoordi[i] = new coordi(id,name,top,bottom);
+            myCoordi[i] = new Coordi(id,name,top,bottom);
             i++;
         }
         cursor.close();
@@ -93,10 +99,10 @@ public class DBcontroller {
     }
 
     //옷장에서 옷을 찾는 함수이다. 마찬가지로 옷장의 옷 데이터를 모조리 긁어온다.
-    public closet[] FindCloset(){
+    public Closet[] FindCloset(){
         SQLiteDatabase db = openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from closet",null);
-        closet myCloset[] = new closet[100];
+        Closet myCloset[] = new Closet[100];
         int i =0;
         while(cursor.moveToNext()){
             int id = cursor.getInt(0);
@@ -104,7 +110,7 @@ public class DBcontroller {
             String color = cursor.getString(2);
             byte[] image = cursor.getBlob(3);
             Bitmap bm = getBitmap(image);
-            myCloset[i] = new closet(id,type,color,bm);
+            myCloset[i] = new Closet(id,type,color,bm);
             i++;
         }
         cursor.close();
@@ -128,29 +134,53 @@ public class DBcontroller {
 }
 
 //closet 구조체이다.
-class closet{
+class Closet{
     private int id;
     private String type;
     private String color;
     private Bitmap image;
-    public closet(int id,String type,String color,Bitmap image){
+    public Closet(int id,String type,String color,Bitmap image){
         this.id = id;
         this.type = type;
         this.color = color;
         this.image = image;
     }
+    public int getId(){
+        return id;
+    }
+    public String getType(){
+        return type;
+    }
+    public String getColor(){
+        return color;
+    }
+    public Bitmap getImage(){
+        return image;
+    }
 }
 
 //coordi 구조체이다.
-class coordi{
+class Coordi{
     private int id;
     private String name;
     private String top;
     private String bottom;
-    public coordi(int id,String name,String top,String bottom){
+    public Coordi(int id,String name,String top,String bottom){
         this.id = id;
         this.name = name;
         this.top = top;
         this.bottom = bottom;
+    }
+    public int id(){
+        return id;
+    }
+    public String getName(){
+        return name;
+    }
+    public String getTop (){
+        return top;
+    }
+    public String getBottom(){
+        return bottom;
     }
 }
