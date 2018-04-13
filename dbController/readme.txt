@@ -15,6 +15,7 @@ Table
    -> _id            integer primary key
    -> type           char(10) foreign key from Clothes.section
    -> color          char(10)
+   -> image          BLOB
    
 class
 1) SQLOpenHelper
