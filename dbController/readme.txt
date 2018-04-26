@@ -14,7 +14,7 @@ Table
    
 3) closet
    -> _id            integer primary key
-   -> type           integer foreign key from Clothes._id
+   -> type           integer foreign key from Clothes_type._id
    -> pattern        char(10)
    -> color          char(10)
    -> image          BLOB
@@ -33,10 +33,13 @@ class
 
 ## version : 1.2
 
-  table Clothes_type
-  type : char -> int
-+ pattern
+   table closet
+   type : char -> int , foreign from Clothes_type.section -> Clothes_type._id
++  pattern
 
-  table Clothes_type 
-+ id primary key
-- primary key (category, section)
+   table Clothes_type 
++  id primary key
+-  primary key (category, section)
+
+   table coordi
++  shoes  char(10) foreign key from closet.id
