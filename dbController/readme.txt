@@ -1,4 +1,3 @@
-## version : 1.0
 
 Table
 1) coordi
@@ -6,6 +5,7 @@ Table
    -> name           char(10) 
    -> Top_clothes    char(10) foreign key from closet.id
    -> buttom_clothes char(10) foreign key from closet.id
+   -> shoes          char(10) foreign key from closet.id
 
 2) Clothes_type
    -> _id            integer primary key
