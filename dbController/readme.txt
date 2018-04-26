@@ -8,12 +8,14 @@ Table
    -> buttom_clothes char(10) foreign key from closet.id
 
 2) Clothes_type
-   -> category       char(10) primary key
-   -> section        char(10) primary key
+   -> _id            integer primary key
+   -> category       char(10) 
+   -> section        char(10) 
    
 3) closet
    -> _id            integer primary key
-   -> type           char(10) foreign key from Clothes.section
+   -> type           integer foreign key from Clothes._id
+   -> pattern        char(10)
    -> color          char(10)
    -> image          BLOB
    
@@ -28,3 +30,13 @@ class
 + comment 
 + return curser -> structure
 + image insert and return 
+
+## version : 1.2
+
+  table Clothes_type
+  type : char -> int
++ pattern
+
+  table Clothes_type 
++ id primary key
+- primary key (category, section)
