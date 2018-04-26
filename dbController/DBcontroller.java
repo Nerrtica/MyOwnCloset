@@ -17,17 +17,17 @@ import java.io.ByteArrayOutputStream;
  */
 
 
-public class DBcontroller {
+public class DBController {
     private static String DBName;
     private DBOpenHelper openHelper;
 
     //생성자 따로 불러올 DB가 있으면 그 DB를 불러오고, 아니면 미리 있는 DB를 불러온다.
 
-    DBcontroller(String DBname,Context context){
+    DBController(String DBname,Context context){
         this.DBName=DBname;
         openHelper = new DBOpenHelper(context,DBname,null,1);
     }
-    DBcontroller(Context context){
+    DBController(Context context){
         this.DBName = "testDB.db";
         openHelper = new DBOpenHelper(context,DBName,null,1);
     }
@@ -35,28 +35,29 @@ public class DBcontroller {
     //Type를 입력하는 구문이다. sql문을 사용하여 입력
     public void InsertType(String category,String section){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO clothes_type VALUES ('"+category+"', '"+section+"');";
+        String sql = "INSERT INTO clothes_type VALUES (NULL, '"+category+"', '"+section+"');";
         db.execSQL(sql);
     }
 
     //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다.
-    public void InsertCoordi(String name,String top,String bottom){
+    public void InsertCoordi(String name,String top,String bottom,String shoes){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+top+"', '"+bottom+"');";
+        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
     }
 
     //옷장에 옷을 넣는 함수이다. 마찬가지로 인자로 type, color, image d가 있고 id는 autoincrement이다.
-    public void InsertCloset(String type,String color,Bitmap B){
+    public void InsertCloset(int type,String color,String pattern,Bitmap B){
         SQLiteDatabase db = openHelper.getWritableDatabase();
         db.beginTransaction();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         B.compress(Bitmap.CompressFormat.PNG,10,stream);
         byte[] data = stream.toByteArray();
-        SQLiteStatement statement = db.compileStatement("insert into closet VALUES (NULL,?,?,?)");
-        statement.bindString(1,type);
+        SQLiteStatement statement = db.compileStatement("insert into closet VALUES (NULL,?,?,?,?)");
+        statement.bindString(1,String.valueOf(type));
         statement.bindString(2,color);
-        statement.bindBlob(3,data);
+        statement.bindString(3,pattern);
+        statement.bindBlob(4,data);
         statement.execute();
         System.out.println("DB ACESS IS SUCCESS");
     }
@@ -72,7 +73,8 @@ public class DBcontroller {
             int id = cursor.getInt(0);
             String top = cursor.getString(2);
             String bottom = cursor.getString(3);
-            myCoordi[i] = new Coordi(id,name,top,bottom);
+            String shoes = cursor.getString(4);
+            myCoordi[i] = new Coordi(id,name,top,bottom,shoes);
             i++;
         }
         cursor.close();
@@ -91,7 +93,8 @@ public class DBcontroller {
             String name = cursor.getString(1);
             String top = cursor.getString(2);
             String bottom = cursor.getString(3);
-            myCoordi[i] = new Coordi(id,name,top,bottom);
+            String shoes = cursor.getString(4);
+            myCoordi[i] = new Coordi(id,name,top,bottom,shoes);
             i++;
         }
         cursor.close();
@@ -107,14 +110,30 @@ public class DBcontroller {
         while(cursor.moveToNext()){
             int id = cursor.getInt(0);
             String type = cursor.getString(1);
-            String color = cursor.getString(2);
-            byte[] image = cursor.getBlob(3);
+            String pattern = cursor.getString(2);
+            String color = cursor.getString(3);
+            byte[] image = cursor.getBlob(4);
             Bitmap bm = getBitmap(image);
-            myCloset[i] = new Closet(id,type,color,bm);
+            myCloset[i] = new Closet(id,type,pattern,color,bm);
             i++;
         }
         cursor.close();
         return myCloset;
+    }
+
+    //모든 코디를 지우는 함수이다.
+    public void deleteAllCoordi(){
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        String sql = "DELETE FROM coordi";
+        db.execSQL(sql);
+    }
+
+    //모든 코디와 옷장의 옷들을 지우는 함수이다.
+    public void deleteAllCloset(){
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        deleteAllCoordi();
+        String sql = "DELETE FROM closet";
+        db.execSQL(sql);
     }
     // 이미지를 byte 형태로 바꿀 때 사용한다.
     public byte[] getByteArrayFromDrawble(Drawable d){
@@ -138,10 +157,12 @@ class Closet{
     private int id;
     private String type;
     private String color;
+    private String pattern;
     private Bitmap image;
-    public Closet(int id,String type,String color,Bitmap image){
+    public Closet(int id,String type,String pattern,String color,Bitmap image){
         this.id = id;
         this.type = type;
+        this.pattern = pattern;
         this.color = color;
         this.image = image;
     }
@@ -150,6 +171,9 @@ class Closet{
     }
     public String getType(){
         return type;
+    }
+    public String getPattern(){
+        return pattern;
     }
     public String getColor(){
         return color;
@@ -165,11 +189,13 @@ class Coordi{
     private String name;
     private String top;
     private String bottom;
-    public Coordi(int id,String name,String top,String bottom){
+    private String shoes;
+    public Coordi(int id,String name,String top,String bottom,String shoes){
         this.id = id;
         this.name = name;
         this.top = top;
         this.bottom = bottom;
+        this.shoes = shoes;
     }
     public int id(){
         return id;
@@ -182,5 +208,8 @@ class Coordi{
     }
     public String getBottom(){
         return bottom;
+    }
+    public String getShoes(){
+        return  shoes;
     }
 }
