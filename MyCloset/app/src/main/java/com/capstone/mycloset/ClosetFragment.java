@@ -3,11 +3,14 @@ package com.capstone.mycloset;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +20,15 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
 public class ClosetFragment extends android.support.v4.app.Fragment implements AdapterView.OnItemClickListener {
     private static final String RESULT_OK = null;
-    private ArrayList<Integer> mThumbs;
+    private ArrayList<Bitmap> mThumbs;
+    private ArrayList<Closet> myCloset;
     private int TYPE_CODE;
 
     private Uri CONTENT_URI;
@@ -68,7 +74,7 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
 //        setResult(RESULT_OK, result);
         Toast.makeText(getContext(), "Test : " + i, Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getContext() , ImageCheckActivity.class);
-        intent.putExtra("Image", mThumbs.get(i));
+        intent.putExtra("ImagePath", myCloset.get(i).getImagePath());
         startActivity(intent);
     }
 
@@ -120,18 +126,42 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
             } else {
                 imageView = (ImageView) convertView;
             }
-            imageView.setImageResource(mThumbs.get(position));
+            Drawable d = new BitmapDrawable(getResources(), mThumbs.get(position));
+            imageView.setImageDrawable(d);
+//            imageView.setImageResource(mThumbs.get(position));
             return imageView;
         }
 
         private void loadIcon() {
-            mThumbs = new ArrayList<Integer>();
+            mThumbs = new ArrayList<Bitmap>();
+            DBController controller ;
+            controller = new DBController(getContext());
 
-            for(int i = 0; i < TYPE_CODE; i++) {
-                mThumbs.add(R.drawable.ic_empty);
-                mThumbs.add(R.drawable.ic_empty);
-                mThumbs.add(R.drawable.ic_empty);
+            myCloset = controller.FindCloset(TYPE_CODE);
+            if(!myCloset.isEmpty()) {
+                for(Closet temp : myCloset) {
+                    Bitmap photo = null;
+                    try {
+                        photo = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.parse(temp.getImagePath()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        finish();
+                    }
+                    mThumbs.add(photo);
+                }
             }
+//            for (Closet temp : controller.FindCloset()) {
+//                if(temp != null && temp.getType().compareTo("1") == 0)
+//                    mThumbs.add(temp.getImage());
+//            }
+
+//            mThumbs = new ArrayList<Integer>();
+//
+//            for(int i = 0; i < TYPE_CODE; i++) {
+//                mThumbs.add(R.drawable.ic_empty);
+//                mThumbs.add(R.drawable.ic_empty);
+//                mThumbs.add(R.drawable.ic_empty);
+//            }
 
 //            final Resources resources = getResources();
 //            final String packageName = getActivity().getApplication().getPackageName();

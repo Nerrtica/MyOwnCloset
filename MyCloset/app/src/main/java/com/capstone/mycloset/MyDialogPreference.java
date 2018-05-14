@@ -13,7 +13,11 @@ public class MyDialogPreference extends DialogPreference {
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if(which == DialogInterface.BUTTON_POSITIVE) {
-
+            DBController controller ;
+            controller = new DBController(getContext());
+            controller.deleteAllCloset();
+            controller.deleteAllCoordi();
+            ClosetActivity.refreshCloset = true;
         }
         else if(which == DialogInterface.BUTTON_NEGATIVE) {
             dialog.cancel();

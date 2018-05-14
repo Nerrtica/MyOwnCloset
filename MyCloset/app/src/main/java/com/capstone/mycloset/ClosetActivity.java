@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -34,6 +36,8 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -43,11 +47,16 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class ClosetActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private Uri photoUri;
     private NavigationView navigationView;
+    private SharedPreferences preferences;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private String gender, beforeGender;
 
     private static final int MSG_TIMER_EXPIRED = 1;
     private static final int BACKKEY_TIMEOUT = 2;
@@ -56,18 +65,24 @@ public class ClosetActivity extends AppCompatActivity
     private long mCurrTimeInMillis = 0;
     private static final int PICK_FROM_CAMERA = 0;
     private static final int CROP_FROM_CAMERA = 1;
+
+    public static boolean refreshCloset = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_closet);
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        gender = preferences.getString("key_gender", "-1");
+        beforeGender = gender;
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager_closet);
+        viewPager = (ViewPager) findViewById(R.id.viewpager_closet);
         setupViewPager(viewPager);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_closet);
+        tabLayout = (TabLayout) findViewById(R.id.tab_closet);
         tabLayout.setupWithViewPager(viewPager);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -105,6 +120,16 @@ public class ClosetActivity extends AppCompatActivity
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.getMenu().findItem(R.id.nav_closet).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
+
+        View headerLayout = navigationView.getHeaderView(0);
+        TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
+        temperatureTextView.setText("최고 16º·최저 11º");
+
+        TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
+        locationTextView.setText("상도동");
+
+        ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
+        weatherImageView.setImageDrawable(getDrawable(R.drawable.wi_cloudy));
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -154,25 +179,49 @@ public class ClosetActivity extends AppCompatActivity
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new ClosetFragment().newInstance(1), "ONE");
-        adapter.addFrag(new ClosetFragment().newInstance(2), "TWO");
-        adapter.addFrag(new ClosetFragment().newInstance(3), "THREE");
-        adapter.addFrag(new ClosetFragment().newInstance(4), "FOUR");
-        adapter.addFrag(new ClosetFragment().newInstance(5), "FIVE");
-        adapter.addFrag(new ClosetFragment().newInstance(6), "SIX");
-        adapter.addFrag(new ClosetFragment().newInstance(7), "SEVEN");
-        adapter.addFrag(new ClosetFragment().newInstance(8), "EIGHT");
-        adapter.addFrag(new ClosetFragment().newInstance(9), "NINE");
-        adapter.addFrag(new ClosetFragment().newInstance(10), "TEN");
+        adapter.addFrag(new ClosetFragment().newInstance(1), "코트");
+        adapter.addFrag(new ClosetFragment().newInstance(2), "재킷");
+        adapter.addFrag(new ClosetFragment().newInstance(3), "정장");
+        adapter.addFrag(new ClosetFragment().newInstance(4), "유니폼");
+        adapter.addFrag(new ClosetFragment().newInstance(5), "스웨터");
+        adapter.addFrag(new ClosetFragment().newInstance(6), "셔츠");
+        adapter.addFrag(new ClosetFragment().newInstance(7), "T-셔츠");
+        adapter.addFrag(new ClosetFragment().newInstance(8), "반바지");
+        adapter.addFrag(new ClosetFragment().newInstance(9), "청바지");
+        adapter.addFrag(new ClosetFragment().newInstance(10), "면바지");
+        adapter.addFrag(new ClosetFragment().newInstance(11), "운동화");
+        adapter.addFrag(new ClosetFragment().newInstance(12), "구두");
+
+        if(gender.compareTo("1") == 0) {
+            adapter.addFrag(new ClosetFragment().newInstance(13), "드레스");
+            adapter.addFrag(new ClosetFragment().newInstance(14), "블라우스");
+            adapter.addFrag(new ClosetFragment().newInstance(15), "치마");
+            adapter.addFrag(new ClosetFragment().newInstance(16), "하이힐");
+        }
+
         viewPager.setAdapter(adapter);
     }
 
     @Override
     protected void onResume() {
+        gender = preferences.getString("key_gender", "-1");
+
+        if(gender.compareTo(beforeGender) != 0 || refreshCloset) {
+            setupViewPager(viewPager);
+            tabLayout.setupWithViewPager(viewPager);
+            refreshCloset = false;
+        }
         if(navigationView != null) {
             navigationView.getMenu().findItem(R.id.nav_closet).setChecked(true);
         }
         super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        gender = preferences.getString("key_gender", "-1");
+
+        super.onPause();
     }
 
     @Override

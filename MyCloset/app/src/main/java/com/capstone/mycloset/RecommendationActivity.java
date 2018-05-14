@@ -23,6 +23,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,6 +106,16 @@ public class RecommendationActivity extends AppCompatActivity
             navigationView.getMenu().findItem(R.id.nav_bookmark).setChecked(true);
         }
         navigationView.setNavigationItemSelectedListener(this);
+
+        View headerLayout = navigationView.getHeaderView(0);
+        TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
+        temperatureTextView.setText("최고 16º·최저 11º");
+
+        TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
+        locationTextView.setText("흑석동");
+
+        ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
+        weatherImageView.setImageDrawable(getDrawable(R.drawable.wi_cloudy));
     }
 
     private void changeTitle() {

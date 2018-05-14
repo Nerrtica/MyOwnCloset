@@ -1,7 +1,10 @@
 package com.capstone.mycloset;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -9,6 +12,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -30,14 +35,19 @@ public class RequestImageToServer extends FragmentActivity {
     private Socket Socket;
 
     private String result;
+    private String gender;
+    private Uri photoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
 
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        gender = preferences.getString("key_gender", "-1");
+
         activity = this;
-        Uri photoUri = (Uri) getIntent().getExtras().get("Image");
+        photoUri = (Uri) getIntent().getExtras().get("Image");
         photo = null;
         try {
             photo = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
@@ -53,8 +63,22 @@ public class RequestImageToServer extends FragmentActivity {
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                connectionServer= new SendData(photo);
-                connectionServer.start();
+                test();
+//                connectionServer= new SendData(photo);
+//                connectionServer.start();
+            }
+        });
+    }
+
+    void test() {
+        DBController controller ;
+        controller = new DBController(getApplicationContext());
+        controller.InsertCloset(1, "#FFFFFF", "line", photoUri.toString());
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getApplicationContext(), "Test", Toast.LENGTH_SHORT).show();
+                ClosetActivity.refreshCloset = true;
+                finish();
             }
         });
     }
@@ -68,27 +92,38 @@ public class RequestImageToServer extends FragmentActivity {
 
         public void run(){
             try{
-//                System.out.println("now 2");
-                Socket = new Socket(IP,PORT);
+                Socket = new Socket(IP, PORT);
                 //socket = new DatagramSocket();
-                InputStream inputStream1 = Socket.getInputStream();
+                InputStream inputStream = Socket.getInputStream();
                 OutputStream outputStream = Socket.getOutputStream();
 
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                image.compress(Bitmap.CompressFormat.JPEG,10,stream);
+                image.compress(Bitmap.CompressFormat.JPEG, 10, stream);
                 byte[] byteArray = stream.toByteArray();
-                outputStream.write(byteArray);
+
+                // Make ByteArray Form : Gender;ImageByteArray
+                gender = gender + ";";
+                byte[] temp = gender.getBytes();
+                byte[] finalByteArray = new byte[byteArray.length + temp.length];
+                System.arraycopy(byteArray, 0, finalByteArray, 0, byteArray.length);
+                System.arraycopy(temp, 0, finalByteArray, byteArray.length, temp.length);
+
+                outputStream.write(finalByteArray);
                 outputStream.write("end".getBytes());
 
-//                System.out.println("now 3");
-
+                // Get Server Text
                 byte[] buffer = new byte[1024];
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
                 int byteRead;
-//                outputStream.println();
-                if((byteRead = inputStream1.read(buffer)) != -1){
+                if((byteRead = inputStream.read(buffer)) != -1){
                     byteArrayOutputStream.write(buffer,0,byteRead);
-                    result = "Result Code : " + byteArrayOutputStream.toString("UTF-8");
+                    result = byteArrayOutputStream.toString("UTF-8");
+                    try {
+                        JSONObject json = new JSONObject(result);
+                        // Json Parsing Process
+                    } catch (Throwable tx) {
+
+                    }
                     activity.runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
@@ -97,7 +132,6 @@ public class RequestImageToServer extends FragmentActivity {
                     });
                 }
             } catch (IOException e) {
-//                System.out.println("ERROR");
                 e.printStackTrace();
             }
 

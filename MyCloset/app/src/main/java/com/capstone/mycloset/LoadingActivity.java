@@ -8,11 +8,14 @@ import android.os.Bundle;
 public class LoadingActivity extends FragmentActivity {
     private Runnable loadFinishRunnable;
     private Handler loadingHandler;
+    private DBOpenHelper openHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
+
+        openHelper = new DBOpenHelper(this,"testDB.db",null,1);
 
 //        if (Build.VERSION.SDK_INT >= 21) {
 //            Window window = getWindow();

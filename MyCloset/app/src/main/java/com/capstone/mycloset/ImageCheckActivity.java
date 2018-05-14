@@ -1,7 +1,9 @@
 package com.capstone.mycloset;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,13 +20,22 @@ public class ImageCheckActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_image_select);
-        Drawable image = getResources().getDrawable((int) getIntent().getExtras().get("Image"));
+
+        String imagePath = getIntent().getStringExtra("ImagePath");
+        Bitmap photo = null;
+        try {
+            photo = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse(imagePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+            finish();
+        }
+
+//        Drawable image = getResources().getDrawable((int) getIntent().getExtras().get("Image"));
 
         ImageView imageView = (ImageView) findViewById(R.id.camera_img);
-        imageView.setBackgroundColor(Color.GRAY);
-        imageView.setImageDrawable(image);
+//        imageView.setBackgroundColor(Color.GRAY);
+        imageView.setImageBitmap(photo);
 
         TextView textView = (TextView) findViewById(R.id.camera_btn);
         textView.setText("닫기");
