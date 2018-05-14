@@ -1,4 +1,3 @@
-## version : 1.0
 
 Table
 1) coordi
@@ -6,15 +5,19 @@ Table
    -> name           char(10) 
    -> Top_clothes    char(10) foreign key from closet.id
    -> buttom_clothes char(10) foreign key from closet.id
+   -> shoes          char(10) foreign key from closet.id
 
 2) Clothes_type
-   -> category       char(10) primary key
-   -> section        char(10) primary key
+   -> _id            integer primary key
+   -> category       char(10) 
+   -> section        char(10) 
    
 3) closet
    -> _id            integer primary key
-   -> type           char(10) foreign key from Clothes.section
+   -> type           integer foreign key from Clothes_type._id
+   -> pattern        char(10)
    -> color          char(10)
+   -> image          BLOB
    
 class
 1) SQLOpenHelper
@@ -27,3 +30,16 @@ class
 + comment 
 + return curser -> structure
 + image insert and return 
+
+## version : 1.2
+
+   table closet
+   type : char -> int , foreign from Clothes_type.section -> Clothes_type._id
++  pattern
+
+   table Clothes_type 
++  id primary key
+-  primary key (category, section)
+
+   table coordi
++  shoes  char(10) foreign key from closet.id
