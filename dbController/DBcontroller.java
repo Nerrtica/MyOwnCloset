@@ -1,21 +1,16 @@
-package com.example.caucse.db;
-
+package com.capstone.mycloset;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 
-import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 /**
  * Created by caucse on 2018-04-03.
  */
-
 
 public class DBController {
     private static String DBName;
@@ -23,13 +18,13 @@ public class DBController {
 
     //생성자 따로 불러올 DB가 있으면 그 DB를 불러오고, 아니면 미리 있는 DB를 불러온다.
 
-    DBController(String DBname,Context context){
-        this.DBName=DBname;
-        openHelper = new DBOpenHelper(context,DBname,null,1);
+    DBController(String DBname, Context context){
+        this.DBName = DBname;
+        openHelper = new DBOpenHelper(context, DBname,null,1);
     }
     DBController(Context context){
-        this.DBName = "testDB.db";
-        openHelper = new DBOpenHelper(context,DBName,null,1);
+        this.DBName = "closetDB.db";
+        openHelper = new DBOpenHelper(context, DBName,null,1);
     }
 
     //Type를 입력하는 구문이다. sql문을 사용하여 입력
@@ -47,19 +42,23 @@ public class DBController {
     }
 
     //옷장에 옷을 넣는 함수이다. 마찬가지로 인자로 type, color, image d가 있고 id는 autoincrement이다.
-    public void InsertCloset(int type,String color,String pattern,Bitmap B){
+    public void InsertCloset(int type, int color, int pattern, int isLong, String imagePath){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        db.beginTransaction();
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        B.compress(Bitmap.CompressFormat.PNG,10,stream);
-        byte[] data = stream.toByteArray();
-        SQLiteStatement statement = db.compileStatement("insert into closet VALUES (NULL,?,?,?,?)");
-        statement.bindString(1,String.valueOf(type));
-        statement.bindString(2,color);
-        statement.bindString(3,pattern);
-        statement.bindBlob(4,data);
-        statement.execute();
-        System.out.println("DB ACESS IS SUCCESS");
+        try{
+            db.beginTransaction();
+            SQLiteStatement statement = db.compileStatement("insert into closet VALUES(NULL,?,?,?,?,?);");
+            statement.bindString(1, String.valueOf(type));
+            statement.bindString(2, String.valueOf(pattern));
+            statement.bindString(3, String.valueOf(color));
+            statement.bindString(4, String.valueOf(isLong));
+            statement.bindString(5, imagePath);
+            statement.execute();
+            db.setTransactionSuccessful();
+        } catch (SQLException e){
+
+        } finally {
+            db.endTransaction();
+        }
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 주어졌을때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
@@ -102,20 +101,42 @@ public class DBController {
     }
 
     //옷장에서 옷을 찾는 함수이다. 마찬가지로 옷장의 옷 데이터를 모조리 긁어온다.
-    public Closet[] FindCloset(){
+    public ArrayList<Closet> FindCloset(){
         SQLiteDatabase db = openHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("select * from closet",null);
-        Closet myCloset[] = new Closet[100];
-        int i =0;
+        Cursor cursor = db.rawQuery("select * from closet;",null);
+        cursor.moveToFirst();
+        ArrayList<Closet> myCloset = new ArrayList<>();
+
+        while(!cursor.isAfterLast()){
+            int id = cursor.getInt(0);
+            int type = cursor.getInt(1);
+            int pattern = cursor.getInt(2);
+            int color = cursor.getInt(3);
+            int isLong = cursor.getInt(4);
+            String image = cursor.getString(5);
+//            Bitmap bm = getBitmap(image);
+            myCloset.add(new Closet(id, type, pattern, color, isLong, image));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return myCloset;
+    }
+
+    //Type에 맞는 옷을 찾는 함수
+    public ArrayList<Closet> FindCloset(int closetType){
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from closet where type ==" + closetType + ";",null);
+        ArrayList<Closet> myCloset = new ArrayList<>();
+
         while(cursor.moveToNext()){
             int id = cursor.getInt(0);
-            String type = cursor.getString(1);
-            String pattern = cursor.getString(2);
-            String color = cursor.getString(3);
-            byte[] image = cursor.getBlob(4);
-            Bitmap bm = getBitmap(image);
-            myCloset[i] = new Closet(id,type,pattern,color,bm);
-            i++;
+            int type = cursor.getInt(1);
+            int pattern = cursor.getInt(2);
+            int color = cursor.getInt(3);
+            int isLong = cursor.getInt(4);
+            String image = cursor.getString(5);
+//            Bitmap bm = getBitmap(image);
+            myCloset.add(new Closet(id, type, pattern, color, isLong, image));
         }
         cursor.close();
         return myCloset;
@@ -135,51 +156,57 @@ public class DBController {
         String sql = "DELETE FROM closet";
         db.execSQL(sql);
     }
-    // 이미지를 byte 형태로 바꿀 때 사용한다.
-    public byte[] getByteArrayFromDrawble(Drawable d){
-        Bitmap bitmap = ((BitmapDrawable)d).getBitmap();
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100,stream);
-        byte[] data = stream.toByteArray();
 
-        return data;
-    }
-
-    //byte를 bitmap형식으로 바꿀 때 사용한다.
-    public Bitmap getBitmap(byte[] b){
-        Bitmap bitmap = BitmapFactory.decodeByteArray(b,0,b.length);
-        return bitmap;
-    }
+//    // 이미지를 byte 형태로 바꿀 때 사용한다.
+//    public byte[] getByteArrayFromDrawble(Drawable d){
+//        Bitmap bitmap = ((BitmapDrawable)d).getBitmap();
+//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100,stream);
+//        byte[] data = stream.toByteArray();
+//
+//        return data;
+//    }
+//
+//    //byte를 bitmap형식으로 바꿀 때 사용한다.
+//    public Bitmap getBitmap(byte[] b){
+//        Bitmap bitmap = BitmapFactory.decodeByteArray(b,0,b.length);
+//        return bitmap;
+//    }
 }
 
 //closet 구조체이다.
 class Closet{
     private int id;
-    private String type;
-    private String color;
-    private String pattern;
-    private Bitmap image;
-    public Closet(int id,String type,String pattern,String color,Bitmap image){
+    private int type;
+    private int color;
+    private int pattern;
+    private int isLong;
+    private String imagePath;
+    public Closet(int id, int type, int pattern, int color, int isLong, String imagePath){
         this.id = id;
         this.type = type;
         this.pattern = pattern;
         this.color = color;
-        this.image = image;
+        this.isLong = isLong;
+        this.imagePath = imagePath;
     }
-    public int getId(){
+    public int getId() {
         return id;
     }
-    public String getType(){
+    public int getType() {
         return type;
     }
-    public String getPattern(){
+    public int getPattern() {
         return pattern;
     }
-    public String getColor(){
+    public int getColor() {
         return color;
     }
-    public Bitmap getImage(){
-        return image;
+    public int isLong() {
+        return isLong;
+    }
+    public String getImagePath() {
+        return imagePath;
     }
 }
 
@@ -197,19 +224,20 @@ class Coordi{
         this.bottom = bottom;
         this.shoes = shoes;
     }
-    public int id(){
+    public int id() {
         return id;
     }
-    public String getName(){
+    public String getName() {
         return name;
     }
-    public String getTop (){
+    public String getTop () {
         return top;
     }
-    public String getBottom(){
+    public String getBottom() {
         return bottom;
     }
-    public String getShoes(){
+    public String getShoes() {
         return  shoes;
     }
 }
+
