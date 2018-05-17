@@ -12,7 +12,6 @@ Table
    -> _id            integer primary key
    -> category       char(10) 
    -> section        char(10) 
-   -> is_long        integer
    
 3) closet
    -> _id            integer primary key
@@ -20,6 +19,7 @@ Table
    -> pattern        char(10)
    -> color          char(10)
    -> image          BLOB
+   -> is_long        integer
    
 class
 1) SQLOpenHelper
@@ -47,7 +47,7 @@ class
 +  shoes  char(10) foreign key from closet.id
 
 ## version : 1.3
-   table Clothes_type 
+   table closet
 +  is_long integer
 
    table coordi
