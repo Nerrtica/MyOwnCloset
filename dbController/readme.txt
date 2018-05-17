@@ -3,6 +3,7 @@ Table
 1) coordi
    -> _id            integer primary key
    -> name           char(10) 
+   -> outerWear      char(10) foreing key from closet.id
    -> Top_clothes    char(10) foreign key from closet.id
    -> buttom_clothes char(10) foreign key from closet.id
    -> shoes          char(10) foreign key from closet.id
@@ -11,6 +12,7 @@ Table
    -> _id            integer primary key
    -> category       char(10) 
    -> section        char(10) 
+   -> is_long        integer
    
 3) closet
    -> _id            integer primary key
@@ -43,3 +45,10 @@ class
 
    table coordi
 +  shoes  char(10) foreign key from closet.id
+
+## version : 1.3
+   table Clothes_type 
++  is_long integer
+
+   table coordi
++  outerWear char(10) foreign key from closet.id
