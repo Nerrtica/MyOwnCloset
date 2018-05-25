@@ -16,8 +16,8 @@ public class DBOpenHelper extends SQLiteOpenHelper{
     //make table, execute once when app is installed
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE closet (_id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern TEXT, " +
-                "color TEXT, image TEXT, FOREIGN KEY (type) REFERENCES clothes_type(_id));");
+        db.execSQL("CREATE TABLE closet (_id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern INTEGER, " +
+                "color INTEGER, _long INTEGER, image TEXT, FOREIGN KEY (type) REFERENCES clothes_type(_id));");
         db.execSQL("CREATE TABLE clothes_type (_id INTEGER PRIMARY KEY AUTOINCREMENT, category CHAR(10),section CHAR(20));");
         db.execSQL("CREATE TABLE coordi  (_id INTEGER PRIMARY KEY AUTOINCREMENT, name CHAR(20), top_clothes ChAR(10), botton_clothes CHAR(10));");
         //Toast.makeText(context,"DB is opened",0).show();

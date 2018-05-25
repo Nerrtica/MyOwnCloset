@@ -1,11 +1,15 @@
 package com.capstone.mycloset;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -107,15 +111,31 @@ public class RecommendationActivity extends AppCompatActivity
         }
         navigationView.setNavigationItemSelectedListener(this);
 
-        View headerLayout = navigationView.getHeaderView(0);
-        TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
-        temperatureTextView.setText("최고 16º·최저 11º");
+        if(grantExternalLocationPermission()) {
+            LocationChecker locationChecker = new LocationChecker(this);
+            if (locationChecker.canGetLocation) {
+                Weather weather = new Weather(locationChecker.getLatitude(), locationChecker.getLongitude());
+                while(!weather.canGetWeather) {
+                    // Wait
+                }
+                View headerLayout = navigationView.getHeaderView(0);
+                TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
+                StringBuilder tempString = new StringBuilder();
+                tempString.append("최고 ");
+                tempString.append(weather.getMaxTemp());
+                tempString.append("º · 최저 ");
+                tempString.append(weather.getMinTemp());
+                tempString.append("º");
+                temperatureTextView.setText(tempString.toString());
 
-        TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
-        locationTextView.setText("흑석동");
+                TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
+                locationTextView.setText(locationChecker.getMiddleAddress());
 
-        ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
-        weatherImageView.setImageDrawable(getDrawable(R.drawable.wi_cloudy));
+                ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
+                weatherImageView.setImageDrawable(getDrawable(weather.getWeatherIcon()));
+            }
+            locationChecker.stopUsingGPS();
+        }
     }
 
     private void changeTitle() {
@@ -282,5 +302,22 @@ public class RecommendationActivity extends AppCompatActivity
     private int convertDipToPixels(float dips)
     {
         return (int) (dips * this.getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private boolean grantExternalLocationPermission() {
+        if (Build.VERSION.SDK_INT >= 23) {
+
+            if (checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }else{
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
+                return false;
+            }
+        }else{
+            return true;
+        }
     }
 }

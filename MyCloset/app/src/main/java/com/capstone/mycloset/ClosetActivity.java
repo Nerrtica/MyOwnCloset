@@ -121,15 +121,31 @@ public class ClosetActivity extends AppCompatActivity
         navigationView.getMenu().findItem(R.id.nav_closet).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
 
-        View headerLayout = navigationView.getHeaderView(0);
-        TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
-        temperatureTextView.setText("최고 16º·최저 11º");
+        if(grantExternalLocationPermission()) {
+            LocationChecker locationChecker = new LocationChecker(this);
+            if (locationChecker.canGetLocation) {
+                Weather weather = new Weather(locationChecker.getLatitude(), locationChecker.getLongitude());
+                while(!weather.canGetWeather) {
+                    // Wait
+                }
+                View headerLayout = navigationView.getHeaderView(0);
+                TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
+                StringBuilder tempString = new StringBuilder();
+                tempString.append("최고 ");
+                tempString.append(weather.getMaxTemp());
+                tempString.append("º · 최저 ");
+                tempString.append(weather.getMinTemp());
+                tempString.append("º");
+                temperatureTextView.setText(tempString.toString());
 
-        TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
-        locationTextView.setText("상도동");
+                TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
+                locationTextView.setText(locationChecker.getMiddleAddress());
 
-        ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
-        weatherImageView.setImageDrawable(getDrawable(R.drawable.wi_cloudy));
+                ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
+                weatherImageView.setImageDrawable(getDrawable(weather.getWeatherIcon()));
+            }
+            locationChecker.stopUsingGPS();
+        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -179,24 +195,23 @@ public class ClosetActivity extends AppCompatActivity
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new ClosetFragment().newInstance(1), "코트");
-        adapter.addFrag(new ClosetFragment().newInstance(2), "재킷");
-        adapter.addFrag(new ClosetFragment().newInstance(3), "정장");
-        adapter.addFrag(new ClosetFragment().newInstance(4), "유니폼");
-        adapter.addFrag(new ClosetFragment().newInstance(5), "스웨터");
-        adapter.addFrag(new ClosetFragment().newInstance(6), "셔츠");
-        adapter.addFrag(new ClosetFragment().newInstance(7), "T-셔츠");
-        adapter.addFrag(new ClosetFragment().newInstance(8), "반바지");
-        adapter.addFrag(new ClosetFragment().newInstance(9), "청바지");
-        adapter.addFrag(new ClosetFragment().newInstance(10), "면바지");
-        adapter.addFrag(new ClosetFragment().newInstance(11), "운동화");
-        adapter.addFrag(new ClosetFragment().newInstance(12), "구두");
+        adapter.addFrag(new ClosetFragment().newInstance(0), "코트");
+        adapter.addFrag(new ClosetFragment().newInstance(1), "재킷");
+        adapter.addFrag(new ClosetFragment().newInstance(2), "정장");
+        adapter.addFrag(new ClosetFragment().newInstance(3), "후드티");
+        adapter.addFrag(new ClosetFragment().newInstance(4), "스웨터");
+        adapter.addFrag(new ClosetFragment().newInstance(5), "셔츠");
+        adapter.addFrag(new ClosetFragment().newInstance(6), "T-셔츠");
+        adapter.addFrag(new ClosetFragment().newInstance(7), "청바지");
+        adapter.addFrag(new ClosetFragment().newInstance(8), "면바지");
+        adapter.addFrag(new ClosetFragment().newInstance(9), "운동화");
+        adapter.addFrag(new ClosetFragment().newInstance(10), "구두");
 
         if(gender.compareTo("1") == 0) {
-            adapter.addFrag(new ClosetFragment().newInstance(13), "드레스");
-            adapter.addFrag(new ClosetFragment().newInstance(14), "블라우스");
-            adapter.addFrag(new ClosetFragment().newInstance(15), "치마");
-            adapter.addFrag(new ClosetFragment().newInstance(16), "하이힐");
+            adapter.addFrag(new ClosetFragment().newInstance(11), "드레스");
+            adapter.addFrag(new ClosetFragment().newInstance(12), "블라우스");
+            adapter.addFrag(new ClosetFragment().newInstance(13), "치마");
+            adapter.addFrag(new ClosetFragment().newInstance(14), "하이힐");
         }
 
         viewPager.setAdapter(adapter);
@@ -318,7 +333,7 @@ public class ClosetActivity extends AppCompatActivity
         } else if (id == R.id.nav_version) {
             AlertDialog.Builder versionDialog = new AlertDialog.Builder(this);
             versionDialog.setTitle("버전");
-            versionDialog.setMessage("Version 0.2.182901");
+            versionDialog.setMessage("Version 0.6.182501");
             versionDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int which) {
@@ -434,5 +449,22 @@ public class ClosetActivity extends AppCompatActivity
             return true;
         }
 
+    }
+
+    private boolean grantExternalLocationPermission() {
+        if (Build.VERSION.SDK_INT >= 23) {
+
+            if (checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }else{
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
+                return false;
+            }
+        }else{
+            return true;
+        }
     }
 }

@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,8 @@ public class RequestImageToServer extends FragmentActivity {
     private Bitmap photo;
     private RequestImageToServer activity;
 
+    private ProgressBar progressBar;
+
     private final int PORT = 11559;
     private final String IP = "114.205.31.136";
 
@@ -42,6 +45,8 @@ public class RequestImageToServer extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
+
+        progressBar = (ProgressBar) findViewById(R.id.progressbar);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         gender = preferences.getString("key_gender", "-1");
@@ -63,9 +68,12 @@ public class RequestImageToServer extends FragmentActivity {
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                test();
-//                connectionServer= new SendData(photo);
-//                connectionServer.start();
+                if(progressBar.getVisibility() == View.GONE) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    connectionServer = new SendData(photo);
+                    connectionServer.start();
+//                    test();
+                }
             }
         });
     }
@@ -73,7 +81,7 @@ public class RequestImageToServer extends FragmentActivity {
     void test() {
         DBController controller ;
         controller = new DBController(getApplicationContext());
-        controller.InsertCloset(1, "#FFFFFF", "line", photoUri.toString());
+        controller.InsertCloset(0, 1, 1, 1, photoUri.toString());
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 Toast.makeText(getApplicationContext(), "Test", Toast.LENGTH_SHORT).show();
@@ -105,8 +113,8 @@ public class RequestImageToServer extends FragmentActivity {
                 gender = gender + ";";
                 byte[] temp = gender.getBytes();
                 byte[] finalByteArray = new byte[byteArray.length + temp.length];
-                System.arraycopy(byteArray, 0, finalByteArray, 0, byteArray.length);
-                System.arraycopy(temp, 0, finalByteArray, byteArray.length, temp.length);
+                System.arraycopy(temp, 0, finalByteArray, 0, temp.length);
+                System.arraycopy(byteArray, 0, finalByteArray, temp.length, byteArray.length);
 
                 outputStream.write(finalByteArray);
                 outputStream.write("end".getBytes());
@@ -121,17 +129,30 @@ public class RequestImageToServer extends FragmentActivity {
                     try {
                         JSONObject json = new JSONObject(result);
                         // Json Parsing Process
-                    } catch (Throwable tx) {
-
+                        DBController controller ;
+                        controller = new DBController(getApplicationContext());
+                        controller.InsertCloset(json.getInt("category"), json.getInt("color"), json.getInt("pattern"),
+                                json.getInt("is_long"), photoUri.toString());
+                        activity.runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                                ClosetActivity.refreshCloset = true;
+                                finish();
+                            }
+                        });
+                    } catch (Exception e) {
+                        progressBar.setVisibility(View.GONE);
+                        e.printStackTrace();
+                        activity.runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Server Error", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                    activity.runOnUiThread(new Runnable() {
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                    });
+
                 }
             } catch (IOException e) {
+                progressBar.setVisibility(View.GONE);
                 e.printStackTrace();
             }
 

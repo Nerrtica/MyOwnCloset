@@ -5,12 +5,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -28,7 +23,7 @@ public class DBController {
         openHelper = new DBOpenHelper(context, DBname,null,1);
     }
     DBController(Context context){
-        this.DBName = "testDB.db";
+        this.DBName = "closetDB.db";
         openHelper = new DBOpenHelper(context, DBName,null,1);
     }
 
@@ -47,18 +42,16 @@ public class DBController {
     }
 
     //옷장에 옷을 넣는 함수이다. 마찬가지로 인자로 type, color, image d가 있고 id는 autoincrement이다.
-    public void InsertCloset(int type, String color, String pattern, String imagePath){
+    public void InsertCloset(int type, int color, int pattern, int isLong, String imagePath){
         SQLiteDatabase db = openHelper.getWritableDatabase();
         try{
             db.beginTransaction();
-//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//            B.compress(Bitmap.CompressFormat.PNG,10, stream);
-//            byte[] data = stream.toByteArray();
-            SQLiteStatement statement = db.compileStatement("insert into closet VALUES(NULL,?,?,?,?);");
-            statement.bindString(1,String.valueOf(type));
-            statement.bindString(2,color);
-            statement.bindString(3,pattern);
-            statement.bindString(4, imagePath);
+            SQLiteStatement statement = db.compileStatement("insert into closet VALUES(NULL,?,?,?,?,?);");
+            statement.bindString(1, String.valueOf(type));
+            statement.bindString(2, String.valueOf(pattern));
+            statement.bindString(3, String.valueOf(color));
+            statement.bindString(4, String.valueOf(isLong));
+            statement.bindString(5, imagePath);
             statement.execute();
             db.setTransactionSuccessful();
         } catch (SQLException e){
@@ -117,11 +110,12 @@ public class DBController {
         while(!cursor.isAfterLast()){
             int id = cursor.getInt(0);
             int type = cursor.getInt(1);
-            String pattern = cursor.getString(2);
-            String color = cursor.getString(3);
-            String image = cursor.getString(4);
+            int pattern = cursor.getInt(2);
+            int color = cursor.getInt(3);
+            int isLong = cursor.getInt(4);
+            String image = cursor.getString(5);
 //            Bitmap bm = getBitmap(image);
-            myCloset.add(new Closet(id, type, pattern, color, image));
+            myCloset.add(new Closet(id, type, pattern, color, isLong, image));
             cursor.moveToNext();
         }
         cursor.close();
@@ -137,11 +131,12 @@ public class DBController {
         while(cursor.moveToNext()){
             int id = cursor.getInt(0);
             int type = cursor.getInt(1);
-            String pattern = cursor.getString(2);
-            String color = cursor.getString(3);
-            String image = cursor.getString(4);
+            int pattern = cursor.getInt(2);
+            int color = cursor.getInt(3);
+            int isLong = cursor.getInt(4);
+            String image = cursor.getString(5);
 //            Bitmap bm = getBitmap(image);
-            myCloset.add(new Closet(id, type, pattern, color, image));
+            myCloset.add(new Closet(id, type, pattern, color, isLong, image));
         }
         cursor.close();
         return myCloset;
@@ -151,6 +146,13 @@ public class DBController {
     public void deleteAllCoordi(){
         SQLiteDatabase db = openHelper.getWritableDatabase();
         String sql = "DELETE FROM coordi";
+        db.execSQL(sql);
+    }
+
+    //모든 옷을 지우는 함수이다.
+    public void deleteCloset(int id) {
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        String sql = "DELETE FROM closet where _id=" + id + ";";
         db.execSQL(sql);
     }
 
@@ -183,29 +185,34 @@ public class DBController {
 class Closet{
     private int id;
     private int type;
-    private String color;
-    private String pattern;
+    private int color;
+    private int pattern;
+    private int isLong;
     private String imagePath;
-    public Closet(int id, int type, String pattern, String color, String imagePath){
+    public Closet(int id, int type, int pattern, int color, int isLong, String imagePath){
         this.id = id;
         this.type = type;
         this.pattern = pattern;
         this.color = color;
+        this.isLong = isLong;
         this.imagePath = imagePath;
     }
-    public int getId(){
+    public int getId() {
         return id;
     }
-    public int getType(){
+    public int getType() {
         return type;
     }
-    public String getPattern(){
+    public int getPattern() {
         return pattern;
     }
-    public String getColor(){
+    public int getColor() {
         return color;
     }
-    public String getImagePath(){
+    public int isLong() {
+        return isLong;
+    }
+    public String getImagePath() {
         return imagePath;
     }
 }
@@ -224,19 +231,19 @@ class Coordi{
         this.bottom = bottom;
         this.shoes = shoes;
     }
-    public int id(){
+    public int id() {
         return id;
     }
-    public String getName(){
+    public String getName() {
         return name;
     }
-    public String getTop (){
+    public String getTop () {
         return top;
     }
-    public String getBottom(){
+    public String getBottom() {
         return bottom;
     }
-    public String getShoes(){
+    public String getShoes() {
         return  shoes;
     }
 }

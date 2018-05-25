@@ -1,15 +1,16 @@
 package com.capstone.mycloset;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,18 +21,19 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class ClosetFragment extends android.support.v4.app.Fragment implements AdapterView.OnItemClickListener {
     private static final String RESULT_OK = null;
     private ArrayList<Bitmap> mThumbs;
     private ArrayList<Closet> myCloset;
+    private int iconSize;
     private int TYPE_CODE;
-
-    private Uri CONTENT_URI;
 
     public static ClosetFragment newInstance(int typeCode) {
         ClosetFragment closetFragment = new ClosetFragment();
@@ -51,15 +53,39 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
         View view = inflater.inflate(R.layout.fragment_closet, container, false);
 
         super.onCreate(savedInstanceState);
-        int iconSize = convertDipToPixels(106);
+        iconSize = convertDipToPixels(106);
 
-        GridView gridview = (GridView) view.findViewById(R.id.gridview_closet);
+        final GridView gridview = (GridView) view.findViewById(R.id.gridview_closet);
         gridview.setAdapter(new IconAdapter(getContext(), iconSize));
         gridview.setOnItemClickListener(this);
         gridview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getContext(), "Test Long Click: " + position, Toast.LENGTH_SHORT).show();
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog.Builder versionDialog = new AlertDialog.Builder(getContext());
+                versionDialog.setTitle("옷 삭제");
+                versionDialog.setMessage("정말로 옷을 삭제하시겠습니까?");
+                versionDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getContext(), "Test Long Click: " + position, Toast.LENGTH_SHORT).show();
+                        Closet closet = myCloset.get(position);
+                        DBController controller ;
+                        controller = new DBController(getContext());
+                        controller.deleteCloset(closet.getId());
+                        Intent intent = getActivity().getIntent();
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        finish();
+                        startActivity(intent);
+                        dialog.cancel();
+                    }
+                });
+                versionDialog.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                versionDialog.show();
                 return true;
             }
         });
@@ -141,8 +167,36 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
             if(!myCloset.isEmpty()) {
                 for(Closet temp : myCloset) {
                     Bitmap photo = null;
+                    String folder = Environment.getExternalStorageDirectory().getAbsolutePath();
+                    String fileName = temp.getImagePath();
+                    int idx = fileName.indexOf("MyCloset/");
+                    fileName = fileName.substring(idx + 9);
+                    fileName = "thum_" + fileName;
+                    String thumFile = folder + "/MyCloset/" + fileName;
                     try {
-                        photo = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.parse(temp.getImagePath()));
+                        photo = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(),
+                                Uri.parse(temp.getImagePath().toString().substring(0, idx + 9) + fileName));
+                    } catch (FileNotFoundException e) {
+                        OutputStream out = null;
+                        try {
+                            File file = new File(thumFile);
+                            file.createNewFile();
+                            out = new FileOutputStream(file);
+                            photo = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), Uri.parse(temp.getImagePath()));
+                            photo = photo.createScaledBitmap(photo, iconSize, iconSize, true);
+                            photo.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+//                            MediaStore.Images.Media.insertImage(getContext().getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+                        } catch (Exception error) {
+                            error.printStackTrace();
+                        } finally {
+                            try {
+                                out.flush();
+                                out.close();
+                            } catch (Exception error) {
+                                error.printStackTrace();
+                            }
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                         finish();
