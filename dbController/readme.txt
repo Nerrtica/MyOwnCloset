@@ -3,6 +3,7 @@ Table
 1) coordi
    -> _id            integer primary key
    -> name           char(10) 
+   -> outerWear      char(10) foreing key from closet.id
    -> Top_clothes    char(10) foreign key from closet.id
    -> buttom_clothes char(10) foreign key from closet.id
    -> shoes          char(10) foreign key from closet.id
@@ -18,6 +19,7 @@ Table
    -> pattern        char(10)
    -> color          char(10)
    -> image          BLOB
+   -> is_long        integer
    
 class
 1) SQLOpenHelper
@@ -43,3 +45,10 @@ class
 
    table coordi
 +  shoes  char(10) foreign key from closet.id
+
+## version : 1.3
+   table closet
++  is_long integer
+
+   table coordi
++  outerWear char(10) foreign key from closet.id
