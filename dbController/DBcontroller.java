@@ -1,43 +1,44 @@
 package com.capstone.mycloset;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
+        import android.content.Context;
+        import android.database.Cursor;
+        import android.database.SQLException;
+        import android.database.sqlite.SQLiteDatabase;
+        import android.database.sqlite.SQLiteStatement;
 
-import java.util.ArrayList;
+        import java.util.ArrayList;
 
 /**
  * Created by caucse on 2018-04-03.
  */
 
-public class DBController {
+public class DBcontroller {
     private static String DBName;
     private DBOpenHelper openHelper;
 
     //생성자 따로 불러올 DB가 있으면 그 DB를 불러오고, 아니면 미리 있는 DB를 불러온다.
 
-    DBController(String DBname, Context context){
+    DBcontroller(String DBname, Context context){
         this.DBName = DBname;
         openHelper = new DBOpenHelper(context, DBname,null,1);
     }
-    DBController(Context context){
+    DBcontroller(Context context){
         this.DBName = "closetDB.db";
         openHelper = new DBOpenHelper(context, DBName,null,1);
     }
 
-    //Type를 입력하는 구문이다. sql문을 사용하여 입력
-    public void InsertType(String category,String section){
+
+    //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다. 겉옷이 없는 함수이다.
+    public void InsertCoordi(String name,String top,String bottom,String shoes){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO clothes_type VALUES (NULL, '"+category+"', '"+section+"');";
+        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"',NULL, '"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
     }
 
     //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다.
-    public void InsertCoordi(String name,String top,String bottom,String shoes){
+    public void InsertCoordi(String name,String outerWear,String top,String bottom,String shoes){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+top+"', '"+bottom+"','" + shoes + "');";
+        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+outerWear+"','"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
     }
 
@@ -62,39 +63,41 @@ public class DBController {
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 주어졌을때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
-    public Coordi[] FindCoordi(String name){
+    public Coordi FindCoordi(String name){
         SQLiteDatabase db = openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from coordi where name='"+name+"';",null);
-        Coordi myCoordi[] = new Coordi[100];
-        int i=0;
-        while (cursor.moveToNext()){
-            if(i>99) break;
+        Coordi myCoordi = null;
+
+        while (!cursor.isAfterLast()){
             int id = cursor.getInt(0);
-            String top = cursor.getString(2);
-            String bottom = cursor.getString(3);
-            String shoes = cursor.getString(4);
-            myCoordi[i] = new Coordi(id,name,top,bottom,shoes);
-            i++;
+            int outerWear = cursor.getInt(2);
+            int top = cursor.getInt(3);
+            int bottom = cursor.getInt(4);
+            int shoes = cursor.getInt(5);
+            myCoordi = new Coordi(id,name,top,bottom,shoes);
+            cursor.moveToNext();
         }
         cursor.close();
         return myCoordi;
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 없고, 코디의 모든 데이터를 싹 긁어올때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
-    public Coordi[] FindCoordi(){
+    public ArrayList<Coordi> FindCoordi(){
         SQLiteDatabase db =openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from coordi",null);
-        Coordi myCoordi[] = new Coordi[100];
-        int i=0;
-        while (cursor.moveToNext()){
-            if(i>99) break;
+        ArrayList<Coordi> myCoordi = new ArrayList<>();
+
+        cursor.moveToFirst();
+
+        while(!cursor.isAfterLast()){
             int id = cursor.getInt(0);
             String name = cursor.getString(1);
-            String top = cursor.getString(2);
-            String bottom = cursor.getString(3);
-            String shoes = cursor.getString(4);
-            myCoordi[i] = new Coordi(id,name,top,bottom,shoes);
-            i++;
+            int outerWear = cursor.getInt(2);
+            int top = cursor.getInt(3);
+            int bottom = cursor.getInt(4);
+            int shoes = cursor.getInt(5);
+            myCoordi.add(new Coordi(id,name,outerWear,top,bottom,shoes));
+            cursor.moveToNext();
         }
         cursor.close();
         return myCoordi;
@@ -146,6 +149,13 @@ public class DBController {
     public void deleteAllCoordi(){
         SQLiteDatabase db = openHelper.getWritableDatabase();
         String sql = "DELETE FROM coordi";
+        db.execSQL(sql);
+    }
+
+    //모든 옷을 지우는 함수이다.
+    public void deleteCloset(int id) {
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        String sql = "DELETE FROM closet where _id=" + id + ";";
         db.execSQL(sql);
     }
 
@@ -214,30 +224,45 @@ class Closet{
 class Coordi{
     private int id;
     private String name;
-    private String top;
-    private String bottom;
-    private String shoes;
-    public Coordi(int id,String name,String top,String bottom,String shoes){
+    private int outerWear_id;
+    private int top_id;
+    private int bottom_id;
+    private int shoes_id;
+    public Coordi(int id,String name,int outerWear,int top,int bottom,int shoes){
         this.id = id;
         this.name = name;
-        this.top = top;
-        this.bottom = bottom;
-        this.shoes = shoes;
+        this.outerWear_id = outerWear;
+        this.top_id = top;
+        this.bottom_id = bottom;
+        this.shoes_id = shoes;
     }
+    public Coordi(int id,String name,int top,int bottom,int shoes){
+        this.id = id;
+        this.name = name;
+        this.outerWear_id = -1;
+        this.top_id = top;
+        this.bottom_id = bottom;
+        this.shoes_id = shoes;
+    }
+
+
     public int id() {
         return id;
     }
     public String getName() {
         return name;
     }
-    public String getTop () {
-        return top;
+    public int getTop () {
+        return top_id;
     }
-    public String getBottom() {
-        return bottom;
+    public int getBottom() {
+        return bottom_id;
     }
-    public String getShoes() {
-        return  shoes;
+    public int getShoes() {
+        return  shoes_id;
+    }
+    public int getOuterWear(){
+        return outerWear_id;
     }
 }
 
