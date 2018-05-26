@@ -38,6 +38,8 @@ public class RecommendationActivity extends AppCompatActivity
     private boolean isVisibleSearchMenu;
     private int TYPE_CODE;
 
+    private Weather weather;
+
     private MenuItem searchMenu;
     private TabLayout tabLayout;
     private NavigationView navigationView;
@@ -111,31 +113,21 @@ public class RecommendationActivity extends AppCompatActivity
         }
         navigationView.setNavigationItemSelectedListener(this);
 
-        if(grantExternalLocationPermission()) {
-            LocationChecker locationChecker = new LocationChecker(this);
-            if (locationChecker.canGetLocation) {
-                Weather weather = new Weather(locationChecker.getLatitude(), locationChecker.getLongitude());
-                while(!weather.canGetWeather) {
-                    // Wait
-                }
-                View headerLayout = navigationView.getHeaderView(0);
-                TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
-                StringBuilder tempString = new StringBuilder();
-                tempString.append("최고 ");
-                tempString.append(weather.getMaxTemp());
-                tempString.append("º · 최저 ");
-                tempString.append(weather.getMinTemp());
-                tempString.append("º");
-                temperatureTextView.setText(tempString.toString());
+        View headerLayout = navigationView.getHeaderView(0);
+        TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
+        StringBuilder tempString = new StringBuilder();
+        tempString.append("최고 ");
+        tempString.append(getIntent().getStringExtra("MaxTemp"));
+        tempString.append("º · 최저 ");
+        tempString.append(getIntent().getStringExtra("MinTemp"));
+        tempString.append("º");
+        temperatureTextView.setText(tempString.toString());
 
-                TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
-                locationTextView.setText(locationChecker.getMiddleAddress());
+        TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
+        locationTextView.setText(getIntent().getStringExtra("Address"));
 
-                ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
-                weatherImageView.setImageDrawable(getDrawable(weather.getWeatherIcon()));
-            }
-            locationChecker.stopUsingGPS();
-        }
+        ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
+        weatherImageView.setImageDrawable(getDrawable(getIntent().getIntExtra("Icon", R.drawable.wi_unknown)));
     }
 
     private void changeTitle() {
@@ -252,8 +244,8 @@ public class RecommendationActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_closet) {
-            Intent intent = new Intent(getApplicationContext() , ClosetActivity.class);
-            startActivity(intent);
+//            Intent intent = new Intent(getApplicationContext() , ClosetActivity.class);
+//            startActivity(intent);
             finish();
         } else if (id == R.id.nav_suggest) {
             if(TYPE_CODE != 0) {
@@ -304,20 +296,20 @@ public class RecommendationActivity extends AppCompatActivity
         return (int) (dips * this.getResources().getDisplayMetrics().density + 0.5f);
     }
 
-    private boolean grantExternalLocationPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
-
-            if (checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                    checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                return true;
-            }else{
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-
-                return false;
-            }
-        }else{
-            return true;
-        }
-    }
+//    private boolean grantExternalLocationPermission() {
+//        if (Build.VERSION.SDK_INT >= 23) {
+//
+//            if (checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+//                    checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                return true;
+//            }else{
+//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+//                        Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//
+//                return false;
+//            }
+//        }else{
+//            return true;
+//        }
+//    }
 }

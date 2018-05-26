@@ -58,6 +58,10 @@ public class ClosetActivity extends AppCompatActivity
     private ViewPager viewPager;
     private String gender, beforeGender;
 
+    private File deleteFile;
+    private Weather weather;
+    private LocationChecker locationChecker;
+
     private static final int MSG_TIMER_EXPIRED = 1;
     private static final int BACKKEY_TIMEOUT = 2;
     private static final int MILLIS_IN_SEC = 1000;
@@ -94,6 +98,7 @@ public class ClosetActivity extends AppCompatActivity
                     File photoFile = null;
                     try {
                         photoFile = createImageFile();
+                        deleteFile = photoFile;
                     } catch (IOException e) {
                         Toast.makeText(ClosetActivity.this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                     }
@@ -121,10 +126,10 @@ public class ClosetActivity extends AppCompatActivity
         navigationView.getMenu().findItem(R.id.nav_closet).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
 
-        if(grantExternalLocationPermission()) {
-            LocationChecker locationChecker = new LocationChecker(this);
+        if(grantExternalLocationPermission() && weather == null) {
+            locationChecker = new LocationChecker(this);
             if (locationChecker.canGetLocation) {
-                Weather weather = new Weather(locationChecker.getLatitude(), locationChecker.getLongitude());
+                weather = new Weather(locationChecker.getLatitude(), locationChecker.getLongitude());
                 while(!weather.canGetWeather) {
                     // Wait
                 }
@@ -222,6 +227,10 @@ public class ClosetActivity extends AppCompatActivity
         gender = preferences.getString("key_gender", "-1");
 
         if(gender.compareTo(beforeGender) != 0 || refreshCloset) {
+            if(deleteFile != null) {
+                deleteFile.delete();
+                deleteFile = null;
+            }
             setupViewPager(viewPager);
             tabLayout.setupWithViewPager(viewPager);
             refreshCloset = false;
@@ -310,10 +319,18 @@ public class ClosetActivity extends AppCompatActivity
             // Now Activity
         } else if (id == R.id.nav_suggest) {
             Intent intent = new Intent(getApplicationContext() , RecommendationActivity.class);
+            intent.putExtra("MaxTemp", weather.getMaxTemp());
+            intent.putExtra("MinTemp", weather.getMinTemp());
+            intent.putExtra("Icon", weather.getWeatherIcon());
+            intent.putExtra("Address", locationChecker.getMiddleAddress());
             intent.putExtra("TypeCode", 0);
             startActivity(intent);
         } else if (id == R.id.nav_bookmark) {
             Intent intent = new Intent(getApplicationContext() , RecommendationActivity.class);
+            intent.putExtra("MaxTemp", weather.getMaxTemp());
+            intent.putExtra("MinTemp", weather.getMinTemp());
+            intent.putExtra("Icon", weather.getWeatherIcon());
+            intent.putExtra("Address", locationChecker.getMiddleAddress());
             intent.putExtra("TypeCode", 1);
             startActivity(intent);
         } else if (id == R.id.nav_setting) {
@@ -430,7 +447,6 @@ public class ClosetActivity extends AppCompatActivity
             i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
             startActivityForResult(i, CROP_FROM_CAMERA);
         }
-
     }
 
     private boolean grantExternalCameraPermission() {

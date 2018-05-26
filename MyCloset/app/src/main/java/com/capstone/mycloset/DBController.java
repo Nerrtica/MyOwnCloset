@@ -27,17 +27,18 @@ public class DBController {
         openHelper = new DBOpenHelper(context, DBName,null,1);
     }
 
-    //Type를 입력하는 구문이다. sql문을 사용하여 입력
-    public void InsertType(String category,String section){
+
+    //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다. 겉옷이 없는 함수이다.
+    public void InsertCoordi(String name,String top,String bottom,String shoes){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO clothes_type VALUES (NULL, '"+category+"', '"+section+"');";
+        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"',NULL, '"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
     }
 
     //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다.
-    public void InsertCoordi(String name,String top,String bottom,String shoes){
+    public void InsertCoordi(String name,String outerWear,String top,String bottom,String shoes){
         SQLiteDatabase db = openHelper.getWritableDatabase();
-        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+top+"', '"+bottom+"','" + shoes + "');";
+        String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+outerWear+"','"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
     }
 
@@ -62,39 +63,41 @@ public class DBController {
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 주어졌을때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
-    public Coordi[] FindCoordi(String name){
+    public Coordi FindCoordi(String name){
         SQLiteDatabase db = openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from coordi where name='"+name+"';",null);
-        Coordi myCoordi[] = new Coordi[100];
-        int i=0;
-        while (cursor.moveToNext()){
-            if(i>99) break;
+        Coordi myCoordi = null;
+
+        while (!cursor.isAfterLast()){
             int id = cursor.getInt(0);
-            String top = cursor.getString(2);
-            String bottom = cursor.getString(3);
-            String shoes = cursor.getString(4);
-            myCoordi[i] = new Coordi(id,name,top,bottom,shoes);
-            i++;
+            int outerWear = cursor.getInt(2);
+            int top = cursor.getInt(3);
+            int bottom = cursor.getInt(4);
+            int shoes = cursor.getInt(5);
+            myCoordi = new Coordi(id,name,top,bottom,shoes);
+            cursor.moveToNext();
         }
         cursor.close();
         return myCoordi;
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 없고, 코디의 모든 데이터를 싹 긁어올때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
-    public Coordi[] FindCoordi(){
+    public ArrayList<Coordi> FindCoordi(){
         SQLiteDatabase db =openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from coordi",null);
-        Coordi myCoordi[] = new Coordi[100];
-        int i=0;
-        while (cursor.moveToNext()){
-            if(i>99) break;
+        ArrayList<Coordi> myCoordi = new ArrayList<>();
+
+        cursor.moveToFirst();
+
+        while(!cursor.isAfterLast()){
             int id = cursor.getInt(0);
             String name = cursor.getString(1);
-            String top = cursor.getString(2);
-            String bottom = cursor.getString(3);
-            String shoes = cursor.getString(4);
-            myCoordi[i] = new Coordi(id,name,top,bottom,shoes);
-            i++;
+            int outerWear = cursor.getInt(2);
+            int top = cursor.getInt(3);
+            int bottom = cursor.getInt(4);
+            int shoes = cursor.getInt(5);
+            myCoordi.add(new Coordi(id,name,outerWear,top,bottom,shoes));
+            cursor.moveToNext();
         }
         cursor.close();
         return myCoordi;
@@ -180,71 +183,3 @@ public class DBController {
 //        return bitmap;
 //    }
 }
-
-//closet 구조체이다.
-class Closet{
-    private int id;
-    private int type;
-    private int color;
-    private int pattern;
-    private int isLong;
-    private String imagePath;
-    public Closet(int id, int type, int pattern, int color, int isLong, String imagePath){
-        this.id = id;
-        this.type = type;
-        this.pattern = pattern;
-        this.color = color;
-        this.isLong = isLong;
-        this.imagePath = imagePath;
-    }
-    public int getId() {
-        return id;
-    }
-    public int getType() {
-        return type;
-    }
-    public int getPattern() {
-        return pattern;
-    }
-    public int getColor() {
-        return color;
-    }
-    public int isLong() {
-        return isLong;
-    }
-    public String getImagePath() {
-        return imagePath;
-    }
-}
-
-//coordi 구조체이다.
-class Coordi{
-    private int id;
-    private String name;
-    private String top;
-    private String bottom;
-    private String shoes;
-    public Coordi(int id,String name,String top,String bottom,String shoes){
-        this.id = id;
-        this.name = name;
-        this.top = top;
-        this.bottom = bottom;
-        this.shoes = shoes;
-    }
-    public int id() {
-        return id;
-    }
-    public String getName() {
-        return name;
-    }
-    public String getTop () {
-        return top;
-    }
-    public String getBottom() {
-        return bottom;
-    }
-    public String getShoes() {
-        return  shoes;
-    }
-}
-

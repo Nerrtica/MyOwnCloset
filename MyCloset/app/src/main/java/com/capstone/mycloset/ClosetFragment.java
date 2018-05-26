@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class ClosetFragment extends android.support.v4.app.Fragment implements AdapterView.OnItemClickListener {
+    private GridView gridview;
+
     private static final String RESULT_OK = null;
     private ArrayList<Bitmap> mThumbs;
     private ArrayList<Closet> myCloset;
@@ -55,7 +57,7 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
         super.onCreate(savedInstanceState);
         iconSize = convertDipToPixels(106);
 
-        final GridView gridview = (GridView) view.findViewById(R.id.gridview_closet);
+        gridview = (GridView) view.findViewById(R.id.gridview_closet);
         gridview.setAdapter(new IconAdapter(getContext(), iconSize));
         gridview.setOnItemClickListener(this);
         gridview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -69,13 +71,13 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(getContext(), "Test Long Click: " + position, Toast.LENGTH_SHORT).show();
                         Closet closet = myCloset.get(position);
+                        deleteImgFile(closet);
                         DBController controller ;
                         controller = new DBController(getContext());
                         controller.deleteCloset(closet.getId());
-                        Intent intent = getActivity().getIntent();
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                        finish();
-                        startActivity(intent);
+                        IconAdapter iconAdapter;
+                        gridview.setAdapter(iconAdapter = new IconAdapter(getContext(), iconSize));
+                        iconAdapter.notifyDataSetChanged();
                         dialog.cancel();
                     }
                 });
@@ -102,6 +104,20 @@ public class ClosetFragment extends android.support.v4.app.Fragment implements A
         Intent intent = new Intent(getContext() , ImageCheckActivity.class);
         intent.putExtra("ImagePath", myCloset.get(i).getImagePath());
         startActivity(intent);
+    }
+
+    private boolean deleteImgFile(Closet closet) {
+        String folder = Environment.getExternalStorageDirectory() + "/MyCloset/";
+        String fileName = closet.getImagePath();
+        int idx = fileName.indexOf("MyCloset/");
+        fileName = fileName.substring(idx + 9);
+        String thumFileName = "thum_" + fileName;
+        File deleteFile = new File(folder, fileName);
+        boolean delete = deleteFile.delete();
+        deleteFile = new File(folder, thumFileName);
+        delete = deleteFile.delete();
+
+        return delete;
     }
 
     private void setResult(String resultOk, Intent result) {
