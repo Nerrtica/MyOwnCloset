@@ -19,9 +19,16 @@ public class DBOpenHelper extends SQLiteOpenHelper{
         db.execSQL("CREATE TABLE closet (_id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, pattern INTEGER, " +
                 "color INTEGER, _long INTEGER, image TEXT, FOREIGN KEY (type) REFERENCES clothes_type(_id));");
         db.execSQL("CREATE TABLE clothes_type (_id INTEGER PRIMARY KEY AUTOINCREMENT, category CHAR(10),section CHAR(20));");
+<<<<<<< HEAD
         db.execSQL("CREATE TABLE coordi (_id INTEGER PRIMARY KEY AUTOINCREMENT, name CHAR(20), top_clothes ChAR(10), botton_clothes CHAR(10));");
         //Toast.makeText(context,"DB is opened",0).show();
 
+=======
+        db.execSQL("CREATE TABLE coordi  (_id INTEGER PRIMARY KEY AUTOINCREMENT, name CHAR(20), outerWear CHAR(20), top_clothes ChAR(10), botton_clothes CHAR(10));");
+
+        //Toast.makeText(context,"DB is opened",0).show();
+        
+>>>>>>> 730d33606c1551b63ea48bcc8c8559d416696583
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'outerWear','jacket');");
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'outerWear','coat');");
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'outerWear','hoody');");
@@ -33,10 +40,17 @@ public class DBOpenHelper extends SQLiteOpenHelper{
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'bottom','pants');");
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'shoes','sneaker');");
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'shoes','shoes');");
+<<<<<<< HEAD
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'top','dress');");
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'top','blouse');");
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'bottom','skirt')");;
         db.execSQL("INSERT INTO clothes_type VALUES(NULL, 'shoes','heel');");
+=======
+        db.execSQL("INSERT INTO clothes-type VALUES(NULL, 'top','dress');");
+        db.execSQL("INSERT INTO clothes-type VALUES(NULL, 'top','blouse');");
+        db.execSQL("INSERT INTO clothes-type VALUES(NULL, 'bottom','skirt')");;
+        db.execSQL("INSERT INTO clothes-type VALUES(NULL, 'shoes','heel');");
+>>>>>>> 730d33606c1551b63ea48bcc8c8559d416696583
     }
 
     @Override
