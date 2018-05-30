@@ -29,14 +29,29 @@ public class DBController {
 
 
     //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다. 겉옷이 없는 함수이다.
-    public void InsertCoordi(String name,String top,String bottom,String shoes){
+    public void InsertCoordi(String name, int top, int bottom, int shoes){
         SQLiteDatabase db = openHelper.getWritableDatabase();
         String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"',NULL, '"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
+//        SQLiteDatabase db = openHelper.getWritableDatabase();
+//        try{
+//            db.beginTransaction();
+//            SQLiteStatement statement = db.compileStatement("insert into closet VALUES(NULL,?,NULL,?,?,?);");
+//            statement.bindString(1, String.valueOf(name));
+//            statement.bindString(2, String.valueOf(top));
+//            statement.bindString(3, String.valueOf(bottom));
+//            statement.bindString(4, String.valueOf(shoes));
+//            statement.execute();
+//            db.setTransactionSuccessful();
+//        } catch (SQLException e){
+//
+//        } finally {
+//            db.endTransaction();
+//        }
     }
 
     //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다.
-    public void InsertCoordi(String name,String outerWear,String top,String bottom,String shoes){
+    public void InsertCoordi(String name, int outerWear, int top, int bottom, int shoes){
         SQLiteDatabase db = openHelper.getWritableDatabase();
         String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"', '"+outerWear+"','"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
@@ -138,11 +153,27 @@ public class DBController {
             int color = cursor.getInt(3);
             int isLong = cursor.getInt(4);
             String image = cursor.getString(5);
-//            Bitmap bm = getBitmap(image);
             myCloset.add(new Closet(id, type, pattern, color, isLong, image));
         }
         cursor.close();
         return myCloset;
+    }
+
+    //Type에 맞는 옷을 찾는 함수
+    public Closet FindClosetFromID(int closetId){
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from closet where _id ==" + closetId + ";",null);
+        cursor.moveToFirst();
+
+        int id = cursor.getInt(0);
+        int type = cursor.getInt(1);
+        int pattern = cursor.getInt(2);
+        int color = cursor.getInt(3);
+        int isLong = cursor.getInt(4);
+        String image = cursor.getString(5);
+        cursor.close();
+
+        return new Closet(id, type, pattern, color, isLong, image);
     }
 
     //모든 코디를 지우는 함수이다.

@@ -15,6 +15,8 @@ public class DetectingClothes<E> {
 
     private ArrayList<BestSet.BestSetItem> bestSetItemArrayList;
 
+    private ArrayList<Coordi> randSetArrayList;
+
     float weatherMinTem;
     float weatherMaxTem;
     float clothesMaxTem = 30;
@@ -31,6 +33,12 @@ public class DetectingClothes<E> {
         BestSet bestSet = new BestSet(context);
         bestSet.initSet();
         bestSetItemArrayList = bestSet.getBestSetArray();
+
+        makeRandomSet();
+    }
+
+    public Coordi getCoordi() {
+        return randSetArrayList.get(0);
     }
 
     private void classificationClothesType() {
@@ -188,8 +196,44 @@ public class DetectingClothes<E> {
     }
 
     private void makeRandomSet() {
+        if(randSetArrayList == null) {
+            randSetArrayList = new ArrayList<Coordi>();
+        }
         for(BestSet.BestSetItem bestSetItem : bestSetItemArrayList) {
-
+            if(bestSetItem.getIncludeOuter()) {
+                for (Closet outer : outerWear) {
+                    if(bestSetItem.getOuterType() == outer.getType()) {
+                        for(Closet top : topClothes) {
+                            if(bestSetItem.getTopType() == top.getType()) {
+                                for(Closet bottom : bottomClothes) {
+                                    if(bestSetItem.getBottomType() == bottom.getType()) {
+                                        for(Closet shoes : this.shoes) {
+                                            if(bestSetItem.getShoesType() == shoes.getType()) {
+                                                randSetArrayList.add(new Coordi(outer.getId(), top.getId(), bottom.getId(), shoes.getId()));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                for(Closet top : topClothes) {
+                    if(bestSetItem.getTopType() == top.getType()) {
+                        for(Closet bottom : bottomClothes) {
+                            if(bestSetItem.getBottomType() == bottom.getType()) {
+                                for(Closet shoes : this.shoes) {
+                                    if(bestSetItem.getShoesType() == shoes.getType()) {
+                                        randSetArrayList.add(new Coordi(top.getId(), bottom.getId(), shoes.getId()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

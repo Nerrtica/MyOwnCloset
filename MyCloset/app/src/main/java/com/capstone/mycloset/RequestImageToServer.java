@@ -70,9 +70,9 @@ public class RequestImageToServer extends FragmentActivity {
             public void onClick(View v) {
                 if(progressBar.getVisibility() == View.GONE) {
                     progressBar.setVisibility(View.VISIBLE);
-                    connectionServer = new SendData(photo);
-                    connectionServer.start();
-//                    test();
+//                    connectionServer = new SendData(photo);
+//                    connectionServer.start();
+                    test();
                 }
             }
         });
@@ -81,7 +81,13 @@ public class RequestImageToServer extends FragmentActivity {
     void test() {
         DBController controller ;
         controller = new DBController(getApplicationContext());
-        controller.InsertCloset(0, 1, 1, 1, photoUri.toString());
+        for(int i = 0; i < 15; i++) {
+            controller.InsertCloset(i, 1, 1, 1, photoUri.toString());
+            controller.InsertCloset(i, 1, 1, 1, photoUri.toString());
+            controller.InsertCloset(i, 1, 1, 1, photoUri.toString());
+            controller.InsertCloset(i, 1, 1, 1, photoUri.toString());
+            controller.InsertCloset(i, 1, 1, 1, photoUri.toString());
+        }
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 Toast.makeText(getApplicationContext(), "Test", Toast.LENGTH_SHORT).show();

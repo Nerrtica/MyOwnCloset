@@ -38,15 +38,22 @@ public class RecommendationActivity extends AppCompatActivity
     private boolean isVisibleSearchMenu;
     private int TYPE_CODE;
 
-    private Weather weather;
-
     private MenuItem searchMenu;
     private TabLayout tabLayout;
     private NavigationView navigationView;
+
+    private DetectingClothes detectingClothes;
+
+    private String maxTemp, minTemp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recommendation);
+
+        maxTemp = getIntent().getStringExtra("MaxTemp");
+        minTemp = getIntent().getStringExtra("MinTemp");
+
+        detectingClothes = new DetectingClothes(this, new Float(maxTemp), new Float(minTemp));
 
         TYPE_CODE = getIntent().getExtras().getInt("TypeCode");
         isVisibleSearchMenu = TYPE_CODE == 1 ? true : false;
@@ -117,9 +124,9 @@ public class RecommendationActivity extends AppCompatActivity
         TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
         StringBuilder tempString = new StringBuilder();
         tempString.append("최고 ");
-        tempString.append(getIntent().getStringExtra("MaxTemp"));
+        tempString.append(maxTemp);
         tempString.append("º · 최저 ");
-        tempString.append(getIntent().getStringExtra("MinTemp"));
+        tempString.append(minTemp);
         tempString.append("º");
         temperatureTextView.setText(tempString.toString());
 
@@ -167,7 +174,8 @@ public class RecommendationActivity extends AppCompatActivity
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new RecommendationFragment(), "오늘의 추천");
+        Coordi coordi = detectingClothes.getCoordi();
+        adapter.addFrag(new RecommendationFragment().newInstance(coordi.getTop(), coordi.getBottom(), coordi.getShoes()), "오늘의 추천");
         adapter.addFrag(new BookmarkFragment(), "북마크");
         viewPager.setAdapter(adapter);
     }

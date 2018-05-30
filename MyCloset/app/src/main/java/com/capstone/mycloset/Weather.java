@@ -116,6 +116,8 @@ public class Weather {
 
                     minTemp = String.valueOf(object2.getDouble("temp_min")-ABSOLUTE_ZERO);
                     maxTemp = String.valueOf(object2.getDouble("temp_max")-ABSOLUTE_ZERO);
+                    minTemp = minTemp.substring(0, 4);
+                    maxTemp = maxTemp.substring(0, 4);
 
                     weather = (String) object1.get("icon");
                     weather = weather.substring(0, 2);
@@ -132,7 +134,6 @@ public class Weather {
                 if(data!=null){
                     Log.d("my weather received",data.toString());
                 }
-
             }
         }.execute();
     }

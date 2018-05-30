@@ -21,4 +21,21 @@
         <item>#795548</item>
         <item>#9E9E9E</item>
     </string-array>
+    <string-array name="closet_type">
+        <item>코트</item>
+        <item>재킷</item>
+        <item>정장</item>
+        <item>후드티</item>
+        <item>스웨터</item>
+        <item>셔츠</item>
+        <item>T-셔츠</item>
+        <item>청바지</item>
+        <item>면바지</item>
+        <item>운동화</item>
+        <item>구두</item>
+        <item>드레스</item>
+        <item>블라우스</item>
+        <item>치마</item>
+        <item>하이힐</item>
+    </string-array>
 </resources>

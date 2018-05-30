@@ -39,7 +39,7 @@ public class LoadingActivity extends FragmentActivity {
         };
 
         loadingHandler = new Handler();
-        loadingHandler.postDelayed(loadFinishRunnable, 3000);
+        loadingHandler.postDelayed(loadFinishRunnable, 1000);
     }
 
     @Override

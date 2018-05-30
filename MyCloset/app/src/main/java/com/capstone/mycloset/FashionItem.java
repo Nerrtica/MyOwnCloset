@@ -1,7 +1,9 @@
 package com.capstone.mycloset;
 
+import android.graphics.Bitmap;
+
 public class FashionItem {
-    private int image;
+    private Bitmap image;
     private String title;
     private String summary;
 
@@ -10,12 +12,12 @@ public class FashionItem {
         this.summary = summary;
     }
 
-    public FashionItem(String title, String summary, int image) {
+    public FashionItem(String title, String summary, Bitmap image) {
         this(title, summary);
         this.image = image;
     }
 
-    public int getImage() {
+    public Bitmap getImage() {
         return image;
     }
 

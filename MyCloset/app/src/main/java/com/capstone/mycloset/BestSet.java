@@ -64,5 +64,25 @@ public class BestSet {
             this.SHOES_TYPE = SHOES_TYPE;
             this.INCLUDE_OUTER = true;
         }
+
+        public boolean getIncludeOuter() {
+            return INCLUDE_OUTER;
+        }
+
+        public int getOuterType() {
+            return OUTER_TYPE;
+        }
+
+        public int getTopType() {
+            return TOP_TYPE;
+        }
+
+        public int getBottomType() {
+            return BOTTOM_TYPE;
+        }
+
+        public int getShoesType() {
+            return SHOES_TYPE;
+        }
     }
 }

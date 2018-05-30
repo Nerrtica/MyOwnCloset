@@ -51,13 +51,20 @@ public class BookmarkFragment extends Fragment implements AdapterView.OnItemClic
 
     private void setFashionItemList() {
         bookmarkItemList = new ArrayList<>();
+        DBController controller ;
+        controller = new DBController(getContext());
 
-        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
-        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
-        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
-        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
-        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
-        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
+        ArrayList<Coordi> arrayList = controller.FindCoordi();
+
+        for(Coordi coordi : arrayList) {
+            bookmarkItemList.add(new BookmarkItem(coordi.getId(), coordi.getTitle(), R.drawable.ic_empty));
+        }
+//        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
+//        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
+//        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
+//        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
+//        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
+//        bookmarkItemList.add(new BookmarkItem("Title", R.drawable.ic_empty));
     }
 
     @Override

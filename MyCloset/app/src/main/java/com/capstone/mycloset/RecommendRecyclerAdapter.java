@@ -3,6 +3,7 @@ package com.capstone.mycloset;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -50,8 +51,8 @@ public class RecommendRecyclerAdapter extends RecyclerView.Adapter<RecommendRecy
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final FashionItem item = items.get(position);
-        Drawable drawable = context.getResources().getDrawable(item.getImage());
-        holder.image.setImageDrawable(drawable);
+        Bitmap drawable = item.getImage();
+        holder.image.setImageBitmap(drawable);
         holder.title.setText(item.getTitle());
         holder.summary.setText(item.getSummary());
         holder.cardView.setCardBackgroundColor(Color.parseColor(colorArray[random.nextInt(colorArray.length)]));
