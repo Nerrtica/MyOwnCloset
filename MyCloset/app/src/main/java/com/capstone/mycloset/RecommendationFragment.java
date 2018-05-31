@@ -9,6 +9,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,7 +40,10 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
     private List<FashionItem> fashionItemList;
 
     private int OUTER_ID, TOP_ID, BOTTOM_ID, SHOES_ID;
-//
+    private boolean addDB;
+
+    public static boolean likeBtn = false;
+
 //    public static RecommendationFragment newInstance(int typeCode) {
 //        RecommendationFragment recommendationFragment = new RecommendationFragment();
 //
@@ -80,6 +85,7 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
 
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
+        addDB = false;
 
         OUTER_ID = getArguments().getInt("OUTER_ID");
         TOP_ID = getArguments().getInt("TOP_ID");
@@ -94,21 +100,31 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
         titleTextView.setText(getDayTitle());
 
         favoriteButton = (ToggleButton) view.findViewById(R.id.favorite_button);
+        if (likeBtn) {
+            favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+        }
         favoriteButton.setChecked(true);
         favoriteButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
-                    favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
-                } else {
-                    favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
-                    DBController controller ;
-                    controller = new DBController(getContext());
-                    if(OUTER_ID != -1) {
-                        controller.InsertCoordi(titleTextView.getText().toString(), OUTER_ID, TOP_ID, BOTTOM_ID, SHOES_ID);
-                    }
-                    else {
-                        controller.InsertCoordi(titleTextView.getText().toString(), TOP_ID, BOTTOM_ID, SHOES_ID);
+                if(!likeBtn) {
+                    if (isChecked) {
+//                    favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
+                    } else {
+                        if (!addDB) {
+                            favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+                            DBController controller;
+                            controller = new DBController(getContext());
+                            if (OUTER_ID != -1) {
+                                controller.InsertCoordi(titleTextView.getText().toString(), OUTER_ID, TOP_ID, BOTTOM_ID, SHOES_ID);
+                            } else {
+                                controller.InsertCoordi(titleTextView.getText().toString(), TOP_ID, BOTTOM_ID, SHOES_ID);
+                            }
+
+//                        RecommendationActivity.refresh = true;
+                            onSubmitListener.onLikeSubmit();
+                            addDB = true;
+                        }
                     }
                 }
             }
@@ -148,6 +164,21 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
         return view;
     }
 
+    public interface SubmitListener {
+        void onLikeSubmit();
+        void onRefreshSubmit();
+    }
+
+    private SubmitListener onSubmitListener;
+
+    public void setSubmitListener(SubmitListener onSubmitListener){
+        this.onSubmitListener = onSubmitListener;
+    }
+
+    public SubmitListener getOnSubmitListener(){
+        return onSubmitListener;
+    }
+
     private String getDayTitle() {
         Calendar cal = Calendar.getInstance();
 
@@ -163,6 +194,9 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
         }
         dayString.append(month);
         dayString.append("-");
+        if(date < 10) {
+            dayString.append(0);
+        }
         dayString.append(date);
 
         return dayString.toString();
@@ -204,9 +238,9 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
             e.printStackTrace();
         }
 
-        fashionItemList.add(new FashionItem("상의", getClosetTypeName(topCloset.getType()), topPhoto));
-        fashionItemList.add(new FashionItem("하의", getClosetTypeName(bottomCloset.getType()), bottomPhoto));
-        fashionItemList.add(new FashionItem("신발", getClosetTypeName(shoesCloset.getType()), shoesPhoto));
+        fashionItemList.add(new FashionItem("상의", getClosetTypeName(topCloset.getType()), topPhoto, topCloset.getColor()));
+        fashionItemList.add(new FashionItem("하의", getClosetTypeName(bottomCloset.getType()), bottomPhoto, bottomCloset.getColor()));
+        fashionItemList.add(new FashionItem("신발", getClosetTypeName(shoesCloset.getType()), shoesPhoto, shoesCloset.getColor()));
     }
 
     private String getThumFilePath(String imagePath) {
@@ -239,6 +273,7 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
         loadFinishRunnable = new Runnable() {
             @Override
             public void run() {
+                onSubmitListener.onRefreshSubmit();
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         };

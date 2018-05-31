@@ -33,21 +33,6 @@ public class DBController {
         SQLiteDatabase db = openHelper.getWritableDatabase();
         String sql = "INSERT INTO coordi VALUES(NULL, '"+name+"',NULL, '"+top+"', '"+bottom+"','" + shoes + "');";
         db.execSQL(sql);
-//        SQLiteDatabase db = openHelper.getWritableDatabase();
-//        try{
-//            db.beginTransaction();
-//            SQLiteStatement statement = db.compileStatement("insert into closet VALUES(NULL,?,NULL,?,?,?);");
-//            statement.bindString(1, String.valueOf(name));
-//            statement.bindString(2, String.valueOf(top));
-//            statement.bindString(3, String.valueOf(bottom));
-//            statement.bindString(4, String.valueOf(shoes));
-//            statement.execute();
-//            db.setTransactionSuccessful();
-//        } catch (SQLException e){
-//
-//        } finally {
-//            db.endTransaction();
-//        }
     }
 
     //코디를 입력하는 함수이다. 인자로 name , top,bottom이 있고, id는 autoincrement라 null을 넣는다.
@@ -78,22 +63,38 @@ public class DBController {
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 주어졌을때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
-    public Coordi FindCoordi(String name){
+    public Coordi FindCoordi(int coordiId){
         SQLiteDatabase db = openHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("select * from coordi where name='"+name+"';",null);
-        Coordi myCoordi = null;
+        Cursor cursor = db.rawQuery("select * from coordi where _id ==" + coordiId + ";",null);
+        cursor.moveToFirst();
 
-        while (!cursor.isAfterLast()){
-            int id = cursor.getInt(0);
-            int outerWear = cursor.getInt(2);
-            int top = cursor.getInt(3);
-            int bottom = cursor.getInt(4);
-            int shoes = cursor.getInt(5);
-            myCoordi = new Coordi(id,name,top,bottom,shoes);
-            cursor.moveToNext();
-        }
+        int id = cursor.getInt(0);
+        String name = cursor.getString(1);
+        int outerWear = cursor.getInt(2);
+        int top = cursor.getInt(3);
+        int bottom = cursor.getInt(4);
+        int shoes = cursor.getInt(5);
+
         cursor.close();
-        return myCoordi;
+
+        return new Coordi(id, name, outerWear, top, bottom, shoes);
+    }
+
+    public Coordi FindCoordi(String titleName){
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from coordi where name =='" + titleName + "';",null);
+        cursor.moveToFirst();
+
+        int id = cursor.getInt(0);
+        String name = cursor.getString(1);
+        int outerWear = cursor.getInt(2);
+        int top = cursor.getInt(3);
+        int bottom = cursor.getInt(4);
+        int shoes = cursor.getInt(5);
+
+        cursor.close();
+
+        return new Coordi(id, name, outerWear, top, bottom, shoes);
     }
 
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 없고, 코디의 모든 데이터를 싹 긁어올때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
@@ -176,10 +177,22 @@ public class DBController {
         return new Closet(id, type, pattern, color, isLong, image);
     }
 
+    public void changeCoordiNme(int id, String changeName){
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        String sql = "UPDATE coordi SET name = '" + changeName +"' where _id=" + id + ";";
+        db.execSQL(sql);
+    }
+
     //모든 코디를 지우는 함수이다.
     public void deleteAllCoordi(){
         SQLiteDatabase db = openHelper.getWritableDatabase();
         String sql = "DELETE FROM coordi";
+        db.execSQL(sql);
+    }
+
+    public void deleteCoordi(int id){
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        String sql = "DELETE FROM coordi where _id=" + id + ";";
         db.execSQL(sql);
     }
 

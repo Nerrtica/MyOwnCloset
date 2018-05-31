@@ -9,17 +9,17 @@
         <item>1</item>
     </string-array>
     <string-array name="card_color">
-        <item>#F44336</item>
-        <item>#E91E63</item>
-        <item>#9C27B0</item>
-        <item>#2196F3</item>
-        <item>#673AB7</item>
-        <item>#009688</item>
-        <item>#4CAF50</item>
+        <item>#D50000</item>
         <item>#FFEB3B</item>
-        <item>#FF9800</item>
+        <item>#4CAF50</item>
+        <item>#2196F3</item>
+        <item>#F44336</item>
+        <item>#9C27B0</item>
+        <item>#E91E63</item>
         <item>#795548</item>
+        <item>#009688</item>
         <item>#9E9E9E</item>
+        <item>#212121</item>
     </string-array>
     <string-array name="closet_type">
         <item>코트</item>
@@ -37,5 +37,25 @@
         <item>블라우스</item>
         <item>치마</item>
         <item>하이힐</item>
+    </string-array>
+    <string-array name="closet_pattern">
+        <item>단색</item>
+        <item>꽃</item>
+        <item>패턴</item>
+        <item>선</item>
+        <item>프린팅</item>
+    </string-array>
+    <string-array name="closet_color">
+        <item>레드</item>
+        <item>옐로</item>
+        <item>그린</item>
+        <item>블루</item>
+        <item>주황</item>
+        <item>퍼플</item>
+        <item>핑크</item>
+        <item>브라운</item>
+        <item>화이트</item>
+        <item>그레이</item>
+        <item>블랙</item>
     </string-array>
 </resources>

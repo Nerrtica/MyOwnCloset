@@ -71,6 +71,7 @@ public class ClosetActivity extends AppCompatActivity
     private static final int CROP_FROM_CAMERA = 1;
 
     public static boolean refreshCloset = false;
+    public static boolean refreshRecommend = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -226,6 +227,16 @@ public class ClosetActivity extends AppCompatActivity
     protected void onResume() {
         gender = preferences.getString("key_gender", "-1");
 
+        if(refreshRecommend) {
+            refreshRecommend = false;
+            Intent intent = new Intent(getApplicationContext() , RecommendationActivity.class);
+            intent.putExtra("MaxTemp", weather.getMaxTemp());
+            intent.putExtra("MinTemp", weather.getMinTemp());
+            intent.putExtra("Icon", weather.getWeatherIcon());
+            intent.putExtra("Address", locationChecker.getMiddleAddress());
+            intent.putExtra("TypeCode", 0);
+            startActivity(intent);
+        }
         if(gender.compareTo(beforeGender) != 0 || refreshCloset) {
             if(deleteFile != null) {
                 deleteFile.delete();
@@ -339,7 +350,8 @@ public class ClosetActivity extends AppCompatActivity
         } else if (id == R.id.nav_about_us) {
             AlertDialog.Builder developerDialog = new AlertDialog.Builder(this);
             developerDialog.setTitle("개발자");
-            developerDialog.setMessage("Chung-Ang Uni. CAPSTONE Project.2018");
+            developerDialog.setMessage("Chung-Ang Uni. CAPSTONE Project.2018\n" +
+                    "GitHub : https://github.com/Nerrtica/MyOwnCloset");
             developerDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int which) {
@@ -350,7 +362,7 @@ public class ClosetActivity extends AppCompatActivity
         } else if (id == R.id.nav_version) {
             AlertDialog.Builder versionDialog = new AlertDialog.Builder(this);
             versionDialog.setTitle("버전");
-            versionDialog.setMessage("Version 0.6.182501");
+            versionDialog.setMessage("Version 0.8.6");
             versionDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int which) {

@@ -1,5 +1,6 @@
 package com.capstone.mycloset;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -70,9 +71,9 @@ public class RequestImageToServer extends FragmentActivity {
             public void onClick(View v) {
                 if(progressBar.getVisibility() == View.GONE) {
                     progressBar.setVisibility(View.VISIBLE);
-//                    connectionServer = new SendData(photo);
-//                    connectionServer.start();
-                    test();
+                    connectionServer = new SendData(photo);
+                    connectionServer.start();
+//                    test();
                 }
             }
         });
@@ -141,8 +142,11 @@ public class RequestImageToServer extends FragmentActivity {
                                 json.getInt("is_long"), photoUri.toString());
                         activity.runOnUiThread(new Runnable() {
                             public void run() {
-                                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
                                 ClosetActivity.refreshCloset = true;
+                                Intent intent = new Intent(getApplicationContext() , ResultActivity.class);
+                                intent.putExtra("Result", result);
+                                startActivity(intent);
                                 finish();
                             }
                         });
@@ -155,7 +159,6 @@ public class RequestImageToServer extends FragmentActivity {
                             }
                         });
                     }
-
                 }
             } catch (IOException e) {
                 progressBar.setVisibility(View.GONE);

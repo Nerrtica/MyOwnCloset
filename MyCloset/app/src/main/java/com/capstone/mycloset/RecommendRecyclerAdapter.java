@@ -2,6 +2,7 @@ package com.capstone.mycloset;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -55,12 +56,12 @@ public class RecommendRecyclerAdapter extends RecyclerView.Adapter<RecommendRecy
         holder.image.setImageBitmap(drawable);
         holder.title.setText(item.getTitle());
         holder.summary.setText(item.getSummary());
-        holder.cardView.setCardBackgroundColor(Color.parseColor(colorArray[random.nextInt(colorArray.length)]));
-//        holder.cardview.setOnClickListener(new View.OnClickListener() {
+        holder.cardView.setCardBackgroundColor(Color.parseColor(colorArray[item.getColor()]));
+//        holder.cardView.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
-//                Intent intent = new Intent(context, OrderActivity.class);
-//                intent.putExtra("Title", item.getTitle());
+//                Intent intent = new Intent(context, CoordiActivity.class);
+//                intent.putExtra("Title", );
 //                context.startActivity(intent);
 //            }
 //        });

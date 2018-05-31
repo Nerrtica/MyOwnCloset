@@ -16,9 +16,11 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BookmarkFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class BookmarkFragment extends Fragment implements AdapterView.OnItemClickListener, BookmarkRecyclerAdapter.BookmarkListener {
 
     private List<BookmarkItem> bookmarkItemList;
+    private BookmarkRecyclerAdapter recyclerAdapter;
+    private  RecyclerView recyclerView;
 //
 //    public static RecommendationFragment newInstance(int typeCode) {
 //        RecommendationFragment recommendationFragment = new RecommendationFragment();
@@ -38,15 +40,38 @@ public class BookmarkFragment extends Fragment implements AdapterView.OnItemClic
 
         super.onCreate(savedInstanceState);
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.bookmark_recyclerview);
+        recyclerView = (RecyclerView) view.findViewById(R.id.bookmark_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
         setFashionItemList();
-        recyclerView.setAdapter(new BookmarkRecyclerAdapter(getContext(), bookmarkItemList, R.layout.activity_recommendation));
+        recyclerAdapter = new BookmarkRecyclerAdapter(getContext(), bookmarkItemList, R.layout.activity_recommendation);
+        recyclerView.setAdapter(recyclerAdapter);
+        recyclerAdapter.setSubmitListener(this);
 
         return view;
+    }
+
+    @Override
+    public void onRefreshSubmit() {
+        setFashionItemList();
+        recyclerAdapter = new BookmarkRecyclerAdapter(getContext(), bookmarkItemList, R.layout.activity_recommendation);
+        recyclerView.setAdapter(recyclerAdapter);
+    }
+
+    public interface BookmarkListener {
+        void onRefreshSubmit();
+    }
+
+    private BookmarkRecyclerAdapter.BookmarkListener onSubmitListener;
+
+    public void setSubmitListener(BookmarkRecyclerAdapter.BookmarkListener onSubmitListener){
+        this.onSubmitListener = onSubmitListener;
+    }
+
+    public BookmarkRecyclerAdapter.BookmarkListener getOnSubmitListener(){
+        return onSubmitListener;
     }
 
     private void setFashionItemList() {

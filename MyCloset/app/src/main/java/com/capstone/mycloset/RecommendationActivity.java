@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -34,26 +35,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecommendationActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, RecommendationFragment.SubmitListener {
     private boolean isVisibleSearchMenu;
     private int TYPE_CODE;
+
+    private FloatingActionButton fab;
+    private ViewPager viewPager;
+    private ViewPagerAdapter adapter;
 
     private MenuItem searchMenu;
     private TabLayout tabLayout;
     private NavigationView navigationView;
 
     private DetectingClothes detectingClothes;
+    private Coordi coordi;
 
+    public static boolean refresh;
     private String maxTemp, minTemp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recommendation);
 
+        refresh = false;
+
         maxTemp = getIntent().getStringExtra("MaxTemp");
         minTemp = getIntent().getStringExtra("MinTemp");
 
         detectingClothes = new DetectingClothes(this, new Float(maxTemp), new Float(minTemp));
+        coordi = detectingClothes.getCoordi();
 
         TYPE_CODE = getIntent().getExtras().getInt("TypeCode");
         isVisibleSearchMenu = TYPE_CODE == 1 ? true : false;
@@ -62,7 +72,7 @@ public class RecommendationActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         changeTitle();
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager_recommendation);
+        viewPager = (ViewPager) findViewById(R.id.viewpager_recommendation);
         setupViewPager(viewPager);
 
         tabLayout = (TabLayout) findViewById(R.id.tab_recommendation);
@@ -76,10 +86,15 @@ public class RecommendationActivity extends AppCompatActivity
                 if(navigationView != null) {
                     if (navigationView.getMenu().findItem(R.id.nav_suggest).isChecked()) {
                         TYPE_CODE = 1;
+                        if(refresh) {
+                            refresh = false;
+                        }
                         navigationView.getMenu().findItem(R.id.nav_bookmark).setChecked(true);
+                        fab.setVisibility(View.GONE);
                     } else {
                         TYPE_CODE = 0;
                         navigationView.getMenu().findItem(R.id.nav_suggest).setChecked(true);
+                        fab.setVisibility(View.VISIBLE);
                     }
                 }
                 changeTitle();
@@ -98,13 +113,17 @@ public class RecommendationActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.getTabAt(TYPE_CODE).select();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finish();
             }
         });
+
+        if(isVisibleSearchMenu) {
+            fab.setVisibility(View.GONE);
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -137,6 +156,12 @@ public class RecommendationActivity extends AppCompatActivity
         weatherImageView.setImageDrawable(getDrawable(getIntent().getIntExtra("Icon", R.drawable.wi_unknown)));
     }
 
+    @Override
+    protected void onStop() {
+        RecommendationFragment.likeBtn = false;
+        super.onStop();
+    }
+
     private void changeTitle() {
         if(TYPE_CODE == 0) {
             getSupportActionBar().setTitle("오늘의 추천");
@@ -145,7 +170,7 @@ public class RecommendationActivity extends AppCompatActivity
         }
     }
 
-    class ViewPagerAdapter extends FragmentPagerAdapter {
+    class ViewPagerAdapter extends FragmentStatePagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
 
@@ -163,6 +188,15 @@ public class RecommendationActivity extends AppCompatActivity
             return mFragmentList.size();
         }
 
+        @Override
+        public int getItemPosition(Object object) {
+            if (object instanceof RecommendationFragment) {
+                return POSITION_NONE;
+            } else {
+                return super.getItemPosition(object);
+            }
+        }
+
         public void addFrag(Fragment fragment, String title) {
             mFragmentList.add(fragment);
             mFragmentTitleList.add(title);
@@ -173,11 +207,48 @@ public class RecommendationActivity extends AppCompatActivity
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        Coordi coordi = detectingClothes.getCoordi();
-        adapter.addFrag(new RecommendationFragment().newInstance(coordi.getTop(), coordi.getBottom(), coordi.getShoes()), "오늘의 추천");
-        adapter.addFrag(new BookmarkFragment(), "북마크");
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        BookmarkFragment bookmarkFrag = new BookmarkFragment();
+        RecommendationFragment recommenationFrag = null;
+        if(coordi.getOuter() == -1) {
+            recommenationFrag = new RecommendationFragment().newInstance(-1, coordi.getTop(),
+                    coordi.getBottom(), coordi.getShoes());
+        } else {
+            recommenationFrag = new RecommendationFragment().newInstance(coordi.getOuter(), coordi.getTop(),
+                    coordi.getBottom(), coordi.getShoes());
+        }
+        adapter.addFrag(recommenationFrag, "오늘의 추천");
+        adapter.addFrag(bookmarkFrag, "북마크");
         viewPager.setAdapter(adapter);
+        recommenationFrag.setSubmitListener(this);
+    }
+
+    public interface SubmitListener {
+        void onLikeSubmit();
+        void onRefreshSubmit();
+    }
+
+    private RecommendationFragment.SubmitListener onSubmitListener;
+
+    public void setSubmitListener(RecommendationFragment.SubmitListener onSubmitListener){
+        this.onSubmitListener = onSubmitListener;
+    }
+
+    public RecommendationFragment.SubmitListener getOnSubmitListener(){
+        return onSubmitListener;
+    }
+
+    @Override
+    public void onLikeSubmit() {
+        RecommendationFragment.likeBtn = true;
+        setupViewPager(viewPager);
+    }
+
+    @Override
+    public void onRefreshSubmit() {
+        RecommendationFragment.likeBtn = false;
+        coordi = detectingClothes.getCoordi();
+        setupViewPager(viewPager);
     }
 
     @Override
@@ -217,6 +288,16 @@ public class RecommendationActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextSubmit(String s) {
                 // 완료
+                DBController controller;
+                controller = new DBController(getApplicationContext());
+
+                Coordi coordi = controller.FindCoordi(s);
+
+                if(coordi != null) {
+                    Intent intent = new Intent(getApplicationContext(), CoordiActivity.class);
+                    intent.putExtra("ID", coordi.getId());
+                    getApplicationContext().startActivity(intent);
+                }
                 return false;
             }
 
@@ -252,8 +333,6 @@ public class RecommendationActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_closet) {
-//            Intent intent = new Intent(getApplicationContext() , ClosetActivity.class);
-//            startActivity(intent);
             finish();
         } else if (id == R.id.nav_suggest) {
             if(TYPE_CODE != 0) {
@@ -273,7 +352,8 @@ public class RecommendationActivity extends AppCompatActivity
         } else if (id == R.id.nav_about_us) {
             AlertDialog.Builder developerDialog = new AlertDialog.Builder(this);
             developerDialog.setTitle("개발자");
-            developerDialog.setMessage("Chung-Ang Uni. CAPSTONE Project.2018");
+            developerDialog.setMessage("Chung-Ang Uni. CAPSTONE Project.2018\n" +
+                    "GitHub : https://github.com/Nerrtica/MyOwnCloset");
             developerDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int which) {
@@ -284,7 +364,7 @@ public class RecommendationActivity extends AppCompatActivity
         } else if (id == R.id.nav_version) {
             AlertDialog.Builder versionDialog = new AlertDialog.Builder(this);
             versionDialog.setTitle("버전");
-            versionDialog.setMessage("Version 0.2.182901");
+            versionDialog.setMessage("Version 0.8.6");
             versionDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int which) {

@@ -21,9 +21,9 @@ public class BestSet {
         bestSetArrayList.add(new BestSetItem(4, 8, 10));
         bestSetArrayList.add(new BestSetItem(5, 8, 10));
         bestSetArrayList.add(new BestSetItem(6, 7, 9));
-//        bestSetArrayList.add(new BestSetItem(0, 4, 8, 10));
-//        bestSetArrayList.add(new BestSetItem(1, 6, 7, 9));
-//        bestSetArrayList.add(new BestSetItem(3, 6, 7, 9));
+        bestSetArrayList.add(new BestSetItem(0, 4, 8, 10));
+        bestSetArrayList.add(new BestSetItem(1, 6, 7, 9));
+        bestSetArrayList.add(new BestSetItem(3, 6, 7, 9));
         if(gender.compareTo("1") == 0) {
             bestSetArrayList.add(new BestSetItem(4, 13, 9));
             bestSetArrayList.add(new BestSetItem(4, 13, 10));

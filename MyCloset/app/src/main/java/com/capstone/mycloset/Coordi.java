@@ -33,6 +33,7 @@ class Coordi{
     }
 
     public Coordi(int top, int bottom, int shoes) {
+        this.outer_id = -1;
         this.top_id = top;
         this.bottom_id = bottom;
         this.shoes_id = shoes;
