@@ -59,7 +59,8 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
         <activity android:name=".ResultActivity" />
-        <activity android:name=".CoordiActivity"></activity>
+        <activity android:name=".CoordiActivity" />
+        <activity android:name=".CoordiCollectActivity"></activity>
     </application>
 
 </manifest>

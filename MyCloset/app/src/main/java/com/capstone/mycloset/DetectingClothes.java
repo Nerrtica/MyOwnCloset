@@ -48,11 +48,15 @@ public class DetectingClothes<E> {
 
         makeRandomSet();
         FilterColor();
+        FilterPattern();
     }
 
     public Coordi getCoordi() {
         Random random = new Random();
 
+        if(randSetArrayList.size() == 0) {
+            return null;
+        }
         return randSetArrayList.get(random.nextInt(randSetArrayList.size()));
     }
 
@@ -189,6 +193,35 @@ public class DetectingClothes<E> {
             if(clothes.get(i).getId() == id) return clothes.get(i).getColor();
         }
         return -1;
+    }
+
+    private int returnNowClothesPattern(int id) {
+        for(int i=0;i<clothes.size();i++) {
+            if(clothes.get(i).getId() == id) return clothes.get(i).getPattern();
+        }
+        return -1;
+    }
+
+    private void FilterPattern() {
+        ArrayList<Integer> indexList = new ArrayList<Integer>();
+
+        for (int i = randSetArrayList.size() - 1; i >= 0; i--) {
+            Coordi now = randSetArrayList.get(i);
+
+            int topPattern = returnNowClothesPattern(now.getTop());
+            int buttomPattern = returnNowClothesPattern(now.getBottom());
+            if(topPattern == 0 || buttomPattern == 0) {
+                continue;
+            } else {
+                if(topPattern != buttomPattern) {
+                    indexList.add(i);
+                }
+            }
+        }
+        for(int i = 0; i < indexList.size(); i++) {
+            int idx = indexList.get(i);
+            randSetArrayList.remove(idx);
+        }
     }
 
     private void FilterColor() {
@@ -349,7 +382,8 @@ public class DetectingClothes<E> {
                 }
             }
         }
-        for(Integer idx : indexList) {
+        for(int i = 0; i < indexList.size(); i++) {
+            int idx = indexList.get(i);
             randSetArrayList.remove(idx);
         }
     }

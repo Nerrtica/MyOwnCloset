@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="알림">
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="notifications_new_message"
-            android:title="알림"
-            android:summary="출근 전 코디 추천 알림을 전송합니다"/>
+    <PreferenceCategory android:title="서버">
+        <EditTextPreference
+            android:key="key_ip"
+            android:title="IP주소"
+            android:summary="서버 IP주소"/>
+        <EditTextPreference
+            android:key="key_port"
+            android:title="포트번호"
+            android:summary="서버 포트 번호"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="일반">
         <ListPreference

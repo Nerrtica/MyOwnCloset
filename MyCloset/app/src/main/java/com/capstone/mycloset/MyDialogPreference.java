@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Environment;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class MyDialogPreference extends DialogPreference {
             controller.deleteAllCloset();
             controller.deleteAllCoordi();
             ClosetActivity.refreshCloset = true;
+            Toast.makeText(getContext(), "삭제되었습니다.", Toast.LENGTH_SHORT).show();
         }
         else if(which == DialogInterface.BUTTON_NEGATIVE) {
             dialog.cancel();

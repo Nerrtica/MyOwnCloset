@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -40,6 +42,7 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
     private List<FashionItem> fashionItemList;
 
     private int OUTER_ID, TOP_ID, BOTTOM_ID, SHOES_ID;
+    private boolean isPossible;
     private boolean addDB;
 
     public static boolean likeBtn = false;
@@ -55,11 +58,23 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
 //        return recommendationFragment;
 //    }
 
+    public static RecommendationFragment newInstance() {
+        RecommendationFragment recommendationFragment = new RecommendationFragment();
+
+        // Supply index input as an argument.
+        Bundle args = new Bundle();
+        args.putBoolean("isPossible", false);
+        recommendationFragment.setArguments(args);
+
+        return recommendationFragment;
+    }
+
     public static RecommendationFragment newInstance(int outer, int top, int bottom, int shoes) {
         RecommendationFragment recommendationFragment = new RecommendationFragment();
 
         // Supply index input as an argument.
         Bundle args = new Bundle();
+        args.putBoolean("isPossible", true);
         args.putInt("OUTER_ID", outer);
         args.putInt("TOP_ID", top);
         args.putInt("BOTTOM_ID", bottom);
@@ -74,6 +89,7 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
 
         // Supply index input as an argument.
         Bundle args = new Bundle();
+        args.putBoolean("isPossible", true);
         args.putInt("OUTER_ID", -1);
         args.putInt("TOP_ID", top);
         args.putInt("BOTTOM_ID", bottom);
@@ -87,48 +103,70 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
                              Bundle savedInstanceState) {
         addDB = false;
 
-        OUTER_ID = getArguments().getInt("OUTER_ID");
-        TOP_ID = getArguments().getInt("TOP_ID");
-        BOTTOM_ID = getArguments().getInt("BOTTOM_ID");
-        SHOES_ID = getArguments().getInt("SHOES_ID");
-
         View view = inflater.inflate(R.layout.fragment_recommendation, container, false);
+        isPossible = getArguments().getBoolean("isPossible");
+        if(isPossible) {
+            final DBController controller;
+            controller = new DBController(getContext());
 
-        super.onCreate(savedInstanceState);
+            OUTER_ID = getArguments().getInt("OUTER_ID");
+            TOP_ID = getArguments().getInt("TOP_ID");
+            BOTTOM_ID = getArguments().getInt("BOTTOM_ID");
+            SHOES_ID = getArguments().getInt("SHOES_ID");
 
-        final TextView titleTextView = (TextView) view.findViewById(R.id.fashion_title);
-        titleTextView.setText(getDayTitle());
+            super.onCreate(savedInstanceState);
 
-        favoriteButton = (ToggleButton) view.findViewById(R.id.favorite_button);
-        if (likeBtn) {
-            favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
-        }
-        favoriteButton.setChecked(true);
-        favoriteButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(!likeBtn) {
-                    if (isChecked) {
+            ImageView outer = (ImageView) view.findViewById(R.id.fashion_image_outer);
+            ImageView top = (ImageView) view.findViewById(R.id.fashion_image_top);
+            ImageView buttom = (ImageView) view.findViewById(R.id.fashion_image_buttom);
+            ImageView shoes = (ImageView) view.findViewById(R.id.fashion_image_shoes);
+
+            try {
+                if(OUTER_ID != -1) {
+                    outer.setImageBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(),
+                            Uri.parse(getThumFilePath(controller.FindClosetFromID(OUTER_ID).getImagePath()))));
+                }
+                top.setImageBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(),
+                        Uri.parse(getThumFilePath(controller.FindClosetFromID(TOP_ID).getImagePath()))));
+                buttom.setImageBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(),
+                        Uri.parse(getThumFilePath(controller.FindClosetFromID(BOTTOM_ID).getImagePath()))));
+                shoes.setImageBitmap(MediaStore.Images.Media.getBitmap(getContext().getContentResolver(),
+                        Uri.parse(getThumFilePath(controller.FindClosetFromID(SHOES_ID).getImagePath()))));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            final TextView titleTextView = (TextView) view.findViewById(R.id.fashion_title);
+            titleTextView.setText(getDayTitle());
+
+            favoriteButton = (ToggleButton) view.findViewById(R.id.favorite_button);
+            if (likeBtn) {
+                favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+            }
+            favoriteButton.setChecked(true);
+            favoriteButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (!likeBtn) {
+                        if (isChecked) {
 //                    favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
-                    } else {
-                        if (!addDB) {
-                            favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
-                            DBController controller;
-                            controller = new DBController(getContext());
-                            if (OUTER_ID != -1) {
-                                controller.InsertCoordi(titleTextView.getText().toString(), OUTER_ID, TOP_ID, BOTTOM_ID, SHOES_ID);
-                            } else {
-                                controller.InsertCoordi(titleTextView.getText().toString(), TOP_ID, BOTTOM_ID, SHOES_ID);
-                            }
+                        } else {
+                            if (!addDB) {
+                                favoriteButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+                                if (OUTER_ID != -1) {
+                                    controller.InsertCoordi(titleTextView.getText().toString(), OUTER_ID, TOP_ID, BOTTOM_ID, SHOES_ID);
+                                } else {
+                                    controller.InsertCoordi(titleTextView.getText().toString(), TOP_ID, BOTTOM_ID, SHOES_ID);
+                                }
 
-//                        RecommendationActivity.refresh = true;
-                            onSubmitListener.onLikeSubmit();
-                            addDB = true;
+                                RecommendationActivity.refresh = true;
+                                onSubmitListener.onLikeSubmit();
+                                addDB = true;
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
 //        favoriteButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -148,18 +186,22 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
 //            }
 //        });
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recommendation_recyclerview);
-        recyclerView.setNestedScrollingEnabled(false);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(layoutManager);
-        setFashionItemList();
-        recyclerView.setAdapter(new RecommendRecyclerAdapter(getContext(), fashionItemList, R.layout.activity_recommendation));
+            RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recommendation_recyclerview);
+            recyclerView.setNestedScrollingEnabled(false);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setLayoutManager(layoutManager);
+            setFashionItemList();
+            recyclerView.setAdapter(new RecommendRecyclerAdapter(getContext(), fashionItemList, R.layout.activity_recommendation));
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_layout);
-        mSwipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorAccent));
-        mSwipeRefreshLayout.setOnRefreshListener(this);
+            mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_layout);
+            mSwipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorAccent));
+            mSwipeRefreshLayout.setOnRefreshListener(this);
+        } else {
+            view.setVisibility(View.GONE);
+            Toast.makeText(getContext(), "의상이 적어 날씨에 맞는 코디를 추천할 수 없습니다.", Toast.LENGTH_SHORT).show();
+        }
 
         return view;
     }
@@ -274,7 +316,7 @@ public class RecommendationFragment extends Fragment implements AdapterView.OnIt
             @Override
             public void run() {
                 onSubmitListener.onRefreshSubmit();
-                mSwipeRefreshLayout.setRefreshing(false);
+                mSwipeRefreshLayout.setRefreshing(true);
             }
         };
 

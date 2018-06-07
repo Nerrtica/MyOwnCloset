@@ -1,6 +1,7 @@
 package com.capstone.mycloset;
 
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -27,6 +28,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             // notification preference change listener
             bindPreferenceSummaryToValue(findPreference("key_gender"));
+            bindPreferenceSummaryToValue(findPreference("key_ip"));
+            bindPreferenceSummaryToValue(findPreference("key_port"));
         }
     }
 

@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -63,8 +66,33 @@ public class BookmarkRecyclerAdapter extends RecyclerView.Adapter<BookmarkRecycl
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final BookmarkItem item = items.get(position);
-        Drawable drawable = context.getResources().getDrawable(item.getImage());
-        holder.image.setImageDrawable(drawable);
+//        Drawable drawable = context.getResources().getDrawable(item.getImage());
+//        holder.image.setImageDrawable(drawable);
+        DBController controller;
+        controller = new DBController(context);
+
+        Coordi coordi = controller.FindCoordi(item.getCoordiID());
+        int OUTER_ID, TOP_ID, BOTTOM_ID, SHOES_ID;
+        OUTER_ID = coordi.getOuter();
+        TOP_ID = coordi.getTop();
+        BOTTOM_ID = coordi.getBottom();
+        SHOES_ID = coordi.getShoes();
+
+        try {
+            if(OUTER_ID != 0) {
+                holder.outerImg.setImageBitmap(MediaStore.Images.Media.getBitmap(context.getContentResolver(),
+                        Uri.parse(getThumFilePath(controller.FindClosetFromID(OUTER_ID).getImagePath()))));
+            }
+            holder.topImg.setImageBitmap(MediaStore.Images.Media.getBitmap(context.getContentResolver(),
+                    Uri.parse(getThumFilePath(controller.FindClosetFromID(TOP_ID).getImagePath()))));
+            holder.buttomImg.setImageBitmap(MediaStore.Images.Media.getBitmap(context.getContentResolver(),
+                    Uri.parse(getThumFilePath(controller.FindClosetFromID(BOTTOM_ID).getImagePath()))));
+            holder.shoesImg.setImageBitmap(MediaStore.Images.Media.getBitmap(context.getContentResolver(),
+                    Uri.parse(getThumFilePath(controller.FindClosetFromID(SHOES_ID).getImagePath()))));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         holder.title.setText(item.getTitle());
         holder.title.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,7 +109,8 @@ public class BookmarkRecyclerAdapter extends RecyclerView.Adapter<BookmarkRecycl
                                 DBController controller;
                                 controller = new DBController(context);
                                 controller.changeCoordiNme(item.getCoordiID(), input.getText().toString());
-                                onSubmitListener.onRefreshSubmit();
+                                holder.title.setText(input.getText().toString());
+//                                onSubmitListener.onRefreshSubmit();
                             }
                         });
                 builder.setNegativeButton("취소",
@@ -108,23 +137,31 @@ public class BookmarkRecyclerAdapter extends RecyclerView.Adapter<BookmarkRecycl
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    if (!removeDB) {
-                        holder.favoriteButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
-                        DBController controller;
-                        controller = new DBController(context);
+                    holder.favoriteButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
+                    DBController controller;
+                    controller = new DBController(context);
 
-                        controller.deleteCoordi(item.getCoordiID());
+                    controller.deleteCoordi(item.getCoordiID());
 
-                        RecommendationActivity.refresh = true;
+//                    RecommendationActivity.refresh = true;
 
-                        onSubmitListener.onRefreshSubmit();
-                        removeDB = true;
-                    }
+                    holder.cardView.setVisibility(View.GONE);
+//                  onSubmitListener.onRefreshSubmit();
                 } else {
 //                    holder.favoriteButton.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
                 }
             }
         });
+    }
+
+    private String getThumFilePath(String imagePath) {
+        String fileName = imagePath;
+        int idx = fileName.indexOf("MyCloset/");
+        String folder = fileName.substring(0, idx + 9);
+        fileName = fileName.substring(idx + 9);
+        fileName = "thum_" + fileName;
+
+        return folder + fileName;
     }
 
     @Override
@@ -133,14 +170,18 @@ public class BookmarkRecyclerAdapter extends RecyclerView.Adapter<BookmarkRecycl
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView image;
+        ImageView outerImg, topImg, buttomImg, shoesImg;
         TextView title;
         CardView cardView;
         ToggleButton favoriteButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            image = (ImageView)itemView.findViewById(R.id.fashion_image);
+            outerImg = (ImageView)itemView.findViewById(R.id.fashion_image_outer);
+            topImg = (ImageView) itemView.findViewById(R.id.fashion_image_top);
+            buttomImg = (ImageView) itemView.findViewById(R.id.fashion_image_buttom);
+            shoesImg = (ImageView) itemView.findViewById(R.id.fashion_image_shoes);
+
             title = (TextView)itemView.findViewById(R.id.fashion_title);
             cardView = (CardView)itemView.findViewById(R.id.card_view_fashion);
             favoriteButton = (ToggleButton)itemView.findViewById(R.id.favorite_button);

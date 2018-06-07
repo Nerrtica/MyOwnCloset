@@ -16,7 +16,7 @@ public class ResultActivity extends AppCompatActivity {
         int typeCode = 0;
         int colorCode = 0;
         int patternCode = 0;
-        boolean isLong = false;
+        int isLong = 0;
 
         String[] type = getResources().getStringArray(R.array.closet_type);
         String[] color = getResources().getStringArray(R.array.closet_color);
@@ -28,7 +28,7 @@ public class ResultActivity extends AppCompatActivity {
             typeCode = json.getInt("category");
             colorCode = json.getInt("color");
             patternCode = json.getInt("pattern");
-            isLong = json.getBoolean("is_long");
+            isLong = json.getInt("is_long");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -41,8 +41,13 @@ public class ResultActivity extends AppCompatActivity {
         result.append("\nPATTERN : ");
         result.append(pattern[patternCode]);
         result.append("\nIsLONG : ");
-        result.append(isLong);
+        if(isLong == 1) {
+            result.append("True");
+        } else {
+            result.append("False");
+        }
 
         TextView textView = (TextView)findViewById(R.id.result_text);
+        textView.setText(result.toString());
     }
 }

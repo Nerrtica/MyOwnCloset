@@ -97,6 +97,29 @@ public class DBController {
         return new Coordi(id, name, outerWear, top, bottom, shoes);
     }
 
+    public ArrayList<Coordi> FindCoordis(String titleName){
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from coordi where name like'%" + titleName + "%';",null);
+        cursor.moveToFirst();
+
+        ArrayList<Coordi> myCoordi = new ArrayList<>();
+
+        while(!cursor.isAfterLast()) {
+            int id = cursor.getInt(0);
+            String name = cursor.getString(1);
+            int outerWear = cursor.getInt(2);
+            int top = cursor.getInt(3);
+            int bottom = cursor.getInt(4);
+            int shoes = cursor.getInt(5);
+            myCoordi.add(new Coordi(id, name, outerWear, top, bottom, shoes));
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+
+        return myCoordi;
+    }
+
     //DB에서 저장한 코디를 찾는 함수이다. 원하는 코디의 이름이 없고, 코디의 모든 데이터를 싹 긁어올때 사용한다. db의 데이터를 cursor형태로 받은 다음, 재정렬한다. 옷장의 최대치는 100
     public ArrayList<Coordi> FindCoordi(){
         SQLiteDatabase db =openHelper.getReadableDatabase();

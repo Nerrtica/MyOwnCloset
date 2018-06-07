@@ -330,18 +330,28 @@ public class ClosetActivity extends AppCompatActivity
             // Now Activity
         } else if (id == R.id.nav_suggest) {
             Intent intent = new Intent(getApplicationContext() , RecommendationActivity.class);
-            intent.putExtra("MaxTemp", weather.getMaxTemp());
-            intent.putExtra("MinTemp", weather.getMinTemp());
-            intent.putExtra("Icon", weather.getWeatherIcon());
-            intent.putExtra("Address", locationChecker.getMiddleAddress());
+            if(weather == null) {
+                intent.putExtra("NoWeather", true);
+            } else {
+                intent.putExtra("NoWeather", false);
+                intent.putExtra("MaxTemp", weather.getMaxTemp());
+                intent.putExtra("MinTemp", weather.getMinTemp());
+                intent.putExtra("Icon", weather.getWeatherIcon());
+                intent.putExtra("Address", locationChecker.getMiddleAddress());
+            }
             intent.putExtra("TypeCode", 0);
             startActivity(intent);
         } else if (id == R.id.nav_bookmark) {
             Intent intent = new Intent(getApplicationContext() , RecommendationActivity.class);
-            intent.putExtra("MaxTemp", weather.getMaxTemp());
-            intent.putExtra("MinTemp", weather.getMinTemp());
-            intent.putExtra("Icon", weather.getWeatherIcon());
-            intent.putExtra("Address", locationChecker.getMiddleAddress());
+            if(weather == null) {
+                intent.putExtra("NoWeather", true);
+            } else {
+                intent.putExtra("NoWeather", false);
+                intent.putExtra("MaxTemp", weather.getMaxTemp());
+                intent.putExtra("MinTemp", weather.getMinTemp());
+                intent.putExtra("Icon", weather.getWeatherIcon());
+                intent.putExtra("Address", locationChecker.getMiddleAddress());
+            }
             intent.putExtra("TypeCode", 1);
             startActivity(intent);
         } else if (id == R.id.nav_setting) {

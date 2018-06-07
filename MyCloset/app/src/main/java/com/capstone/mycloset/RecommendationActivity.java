@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -30,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,8 +61,14 @@ public class RecommendationActivity extends AppCompatActivity
 
         refresh = false;
 
-        maxTemp = getIntent().getStringExtra("MaxTemp");
-        minTemp = getIntent().getStringExtra("MinTemp");
+        if(!getIntent().getBooleanExtra("NoWeather", true)) {
+            maxTemp = getIntent().getStringExtra("MaxTemp");
+            minTemp = getIntent().getStringExtra("MinTemp");
+        } else {
+            maxTemp = "50";
+            minTemp = "-50";
+            Toast.makeText(this, "날씨 정보를 불러올 수 없어 정확한 추천이 어렵습니다.", Toast.LENGTH_SHORT).show();
+        }
 
         detectingClothes = new DetectingClothes(this, new Float(maxTemp), new Float(minTemp));
         coordi = detectingClothes.getCoordi();
@@ -140,20 +148,22 @@ public class RecommendationActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         View headerLayout = navigationView.getHeaderView(0);
-        TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
-        StringBuilder tempString = new StringBuilder();
-        tempString.append("최고 ");
-        tempString.append(maxTemp);
-        tempString.append("º · 최저 ");
-        tempString.append(minTemp);
-        tempString.append("º");
-        temperatureTextView.setText(tempString.toString());
+        if(!getIntent().getBooleanExtra("NoWeather", true)) {
+            TextView temperatureTextView = (TextView) headerLayout.findViewById(R.id.temperatureText);
+            StringBuilder tempString = new StringBuilder();
+            tempString.append("최고 ");
+            tempString.append(maxTemp);
+            tempString.append("º · 최저 ");
+            tempString.append(minTemp);
+            tempString.append("º");
+            temperatureTextView.setText(tempString.toString());
 
-        TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
-        locationTextView.setText(getIntent().getStringExtra("Address"));
+            TextView locationTextView = (TextView) headerLayout.findViewById(R.id.locationText);
+            locationTextView.setText(getIntent().getStringExtra("Address"));
 
-        ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
-        weatherImageView.setImageDrawable(getDrawable(getIntent().getIntExtra("Icon", R.drawable.wi_unknown)));
+            ImageView weatherImageView = (ImageView) headerLayout.findViewById(R.id.weatherImageView);
+            weatherImageView.setImageDrawable(getDrawable(getIntent().getIntExtra("Icon", R.drawable.wi_unknown)));
+        }
     }
 
     @Override
@@ -210,12 +220,16 @@ public class RecommendationActivity extends AppCompatActivity
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
         BookmarkFragment bookmarkFrag = new BookmarkFragment();
         RecommendationFragment recommenationFrag = null;
-        if(coordi.getOuter() == -1) {
-            recommenationFrag = new RecommendationFragment().newInstance(-1, coordi.getTop(),
-                    coordi.getBottom(), coordi.getShoes());
+        if(coordi != null) {
+            if (coordi.getOuter() == -1) {
+                recommenationFrag = new RecommendationFragment().newInstance(-1, coordi.getTop(),
+                        coordi.getBottom(), coordi.getShoes());
+            } else {
+                recommenationFrag = new RecommendationFragment().newInstance(coordi.getOuter(), coordi.getTop(),
+                        coordi.getBottom(), coordi.getShoes());
+            }
         } else {
-            recommenationFrag = new RecommendationFragment().newInstance(coordi.getOuter(), coordi.getTop(),
-                    coordi.getBottom(), coordi.getShoes());
+            recommenationFrag = new RecommendationFragment().newInstance();
         }
         adapter.addFrag(recommenationFrag, "오늘의 추천");
         adapter.addFrag(bookmarkFrag, "북마크");
@@ -290,13 +304,22 @@ public class RecommendationActivity extends AppCompatActivity
                 // 완료
                 DBController controller;
                 controller = new DBController(getApplicationContext());
+                ArrayList<Coordi> coordis = new ArrayList<Coordi>();
 
-                Coordi coordi = controller.FindCoordi(s);
+                coordis = controller.FindCoordis(s);
 
-                if(coordi != null) {
-                    Intent intent = new Intent(getApplicationContext(), CoordiActivity.class);
-                    intent.putExtra("ID", coordi.getId());
-                    getApplicationContext().startActivity(intent);
+                if(!coordis.isEmpty()) {
+                    if(coordis.size() == 1) {
+                        Coordi coordi = controller.FindCoordi(s);
+                        Intent intent = new Intent(getApplicationContext(), CoordiActivity.class);
+                        intent.putExtra("ID", coordi.getId());
+                        startActivity(intent);
+                    } else {
+                        Intent intent = new Intent(getApplicationContext(), CoordiCollectActivity.class);
+                        intent.putExtra("Search", s);
+                        startActivity(intent);
+                    }
+//                    getApplicationContext().startActivity(intent);
                 }
                 return false;
             }

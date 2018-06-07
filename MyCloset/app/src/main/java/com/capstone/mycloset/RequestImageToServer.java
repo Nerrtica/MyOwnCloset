@@ -24,7 +24,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
 
 public class RequestImageToServer extends FragmentActivity {
     private Bitmap photo;
@@ -32,8 +35,8 @@ public class RequestImageToServer extends FragmentActivity {
 
     private ProgressBar progressBar;
 
-    private final int PORT = 11559;
-    private final String IP = "114.205.31.136";
+    private int PORT;
+    private String IP;
 
     private SendData connectionServer;
     private Socket Socket;
@@ -47,9 +50,13 @@ public class RequestImageToServer extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
 
-        progressBar = (ProgressBar) findViewById(R.id.progressbar);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        IP = preferences.getString("key_ip", "");
+        PORT = new Integer(preferences.getString("key_port", "5000"));
+
+        progressBar = (ProgressBar) findViewById(R.id.progressbar);
+
         gender = preferences.getString("key_gender", "-1");
 
         activity = this;
@@ -107,7 +114,19 @@ public class RequestImageToServer extends FragmentActivity {
 
         public void run(){
             try{
-                Socket = new Socket(IP, PORT);
+                Socket = new Socket();
+                SocketAddress socketAddress = new InetSocketAddress(IP, PORT);
+                Socket.setSoTimeout(3000);
+                Socket.connect(socketAddress, 3000);
+//                if(!Socket.isConnected()){
+//                    activity.runOnUiThread(new Runnable() {
+//                        public void run() {
+////                                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(getApplicationContext(), "Server Error\n 서버를 확인해 주세요", Toast.LENGTH_SHORT).show();
+//                            finish();
+//                        }
+//                    });
+//                }
                 //socket = new DatagramSocket();
                 InputStream inputStream = Socket.getInputStream();
                 OutputStream outputStream = Socket.getOutputStream();
@@ -151,20 +170,32 @@ public class RequestImageToServer extends FragmentActivity {
                             }
                         });
                     } catch (Exception e) {
-                        progressBar.setVisibility(View.GONE);
                         e.printStackTrace();
                         activity.runOnUiThread(new Runnable() {
                             public void run() {
                                 Toast.makeText(getApplicationContext(), "Server Error", Toast.LENGTH_SHORT).show();
+                                finish();
                             }
                         });
                     }
                 }
+            } catch (SocketException e) {
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+//                                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Server Error\n 서버를 확인해 주세요", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
             } catch (IOException e) {
-                progressBar.setVisibility(View.GONE);
-                e.printStackTrace();
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+//                                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Server Error\n 서버를 확인해 주세요", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
             }
-
         }
     }
 }
